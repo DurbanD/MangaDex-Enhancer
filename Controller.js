@@ -18,12 +18,15 @@ globals.Controller = class Controller {
       })
     }
   
-    async backgroundMessageCallback(request, sender, sendResponse) {
+    backgroundMessageCallback(request, sender, sendResponse) {
       console.log(`
 Message recieved by service worker. 
 Sender:`, sender, `
 Request: `, request);
-      sendResponse({msg:`background.js recieved a message from ${sender.id} and has successfully sent a response`})
+        if (request.type === "getName") {
+            sendResponse({msg:globals.activeConnection.name})
+        }
+        sendResponse({msg:`background.js recieved a message from ${sender.id} and has successfully sent a response`})
     }
   
     updateGlobals() {
