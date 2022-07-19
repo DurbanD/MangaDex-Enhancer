@@ -41,24 +41,16 @@ let connect = function () {
     return port
 }
 let port = connect()
-// port.postMessage({type:'idGet', idList:['371bb8db-b84a-495e-bdb6-a744da3c2f5e']});
+port.postMessage({type:'idGet', idList:['371bb8db-b84a-495e-bdb6-a744da3c2f5e']});
 
 let V = new View()
-let launchView = function() {
-    let mangaCards = document.querySelectorAll('.manga-card')
-    if (mangaCards.length === 0) setTimeout(launchView, 50)
-    else {
+
+let mangaCards = document.querySelectorAll('.manga-card')
+new MutationObserver(()=> {
+    const newCards = document.querySelectorAll('.manga-card')
+    if (mangaCards[0] !== newCards[0]) {
+        mangaCards = newCards
         V.updateSeenCards()
-        let lastURL = location.href
-        new MutationObserver(() => {
-            const url = location.href;
-            if (url !== lastURL) {
-                lastURL = url;
-                setTimeout(launchView, 100);
-            }
-        }).observe(document, {subtree: true, childList: true});
         console.log(V.cards)
     }
-}
-
-window.onload = () => setTimeout(launchView, 100)
+}).observe(document, {subtree: true, childList: true})
