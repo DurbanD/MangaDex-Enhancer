@@ -38,24 +38,37 @@ class View {
 }
 
 class BackgroundHandler {
-
+    static name = ''
+    static dataMap = new Map()
+    static port = null
     constructor(name) {
+        if (BackgroundHandler.name !== '') throw Error('BackgroundHandler already exists')
         this.name = name
-        this.port = null
+        BackgroundHandler.name = this.name
+        this.port = BackgroundHandler.port
+        this.dataMap = BackgroundHandler.dataMap
     }
 
-    listenForConnectionMessages (view=null) {
+    setContainers(view) {
+        for (let card of view.cards) {
+            let id = view.getCardID(card)
+            if (this.dataMap.has(id)) this.dataMap.get(id).container = card
+            else this.dataMap.set(id, new MangaInfo(card, null, null))
+        }
+        console.log(this.dataMap)
+    }
+
+    listenForConnectionMessages () {
         if (!this.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
         this.port.onMessage.addListener(function(msg, sender) {
             
             if (msg.type === 'idGet_Response') {
                 console.log('idGet response recieved. \n', msg)
-                if (view) {
                     for (let res of msg.body.data) {
-                        if (view.viewMap.has(res.id)) view.viewMap.get(res.id).fullInfo = res
-                        else view.viewMap.set(res.id, new MangaInfo(null, res, null))
+                        if (BackgroundHandler.dataMap.has(res.id)) BackgroundHandler.dataMap.get(res.id).fullInfo = res
+                        else BackgroundHandler.dataMap.set(res.id, new MangaInfo(null, res, null))
                     }
-                }
+                console.log(BackgroundHandler.dataMap)
             }
           });
     }
@@ -94,7 +107,9 @@ new MutationObserver(()=> {
     if (V.cards[0] !== newCards[0]) {
         V.updateSeenCards()
         V.setViewMap()
-        Handler.idLookup([...V.viewMap.keys()])
-        console.log(V.viewMap)
+        Handler.setContainers(V)
+        Handler.idLookup([...Handler.dataMap.keys()])
+        console.log(Handler)
+        // console.log(V.viewMap)
     }
 }).observe(document, {subtree: true, childList: true})
