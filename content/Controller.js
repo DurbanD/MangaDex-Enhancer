@@ -43,7 +43,7 @@ export default class Controller {
 
           });
     }
-    
+
     openConnection() {
         this.port = chrome.runtime.connect({name: this.name})
         return this.port
@@ -58,6 +58,7 @@ export default class Controller {
     }
 
     idLookup(ids) {
+        if (!this.port) this.connect()
         this.port.postMessage({type:'idGet', idList:ids});
     }
 
@@ -65,6 +66,5 @@ export default class Controller {
         this.openConnection()
         this.listenForConnectionMessages()
         this.listenForMessages()
-        return this.port
     }
 }
