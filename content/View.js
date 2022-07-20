@@ -12,4 +12,12 @@ export default class View {
             id = href.match(/(?<=title\/)[A-Za-z0-9-]+/)
         return id[0]
     }
+
+    setCounters() {
+
+    }
+
+    setFavored() {
+        
+    }
 }

@@ -67,4 +67,11 @@ export default class Controller {
         this.listenForConnectionMessages()
         this.listenForMessages()
     }
+
+    updateDataMap(view=null) {
+        if (view) this.setContainers(view)
+        let newManga = []
+        for (let key of this.dataMap.keys()) if (this.dataMap.get(key).fullInfo === null) newManga.push(key)
+        this.idLookup(newManga)
+    }
 }
