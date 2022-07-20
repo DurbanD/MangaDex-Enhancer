@@ -29,5 +29,19 @@
       "js": ["contentscript.js"],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [ 
+    {
+      "resources" : ["content/View.js"],
+      "matches":["https://*.mangadex.org/*","http://*.mangadex.org/*"]
+    },
+    {
+      "resources" : ["content/Controller.js"],
+      "matches":["https://*.mangadex.org/*","http://*.mangadex.org/*"]
+    },
+    {
+      "resources" : ["content/main.js"],
+      "matches":["https://*.mangadex.org/*","http://*.mangadex.org/*"]
+    }
   ]
 }
