@@ -1,56 +1,100 @@
+class MangaInfo {
+    constructor(container, fullInfo, userInfo) {
+        this.container = container
+        this.fullInfo = fullInfo
+        this.userInfo = userInfo
+    }
+}
+
 class View {
     constructor() {
         this.cards = document.querySelectorAll('.manga-card')
+        this.viewMap = new Map()
     }
 
     updateSeenCards() {
         this.cards = document.querySelectorAll('.manga-card')
     }
-}
 
-// Handle connection
-let listenForConnectionMessages = function(port) {
-    port.onMessage.addListener(function(msg) {
-        console.log(`Message Recieved over port ${port.name}: \n`, msg)
-      });
-}
+    getCardID(card) {
+        let href = card.querySelector('a').href,
+            id = href.match(/(?<=title\/)[A-Za-z0-9-]+/)
+        return id[0]
+    }
 
-let openConnection = function() {
-    let name, port
-    chrome.runtime.sendMessage({type: "getName"}, function(response) {
-        name = response.msg
-    });
-    port = chrome.runtime.connect({name:name})
-
-    return port
-}
-
-// Handle recieving messages from background.js (Sync)
-let listenForMessages = function () {
-    chrome.runtime.onMessage.addListener(
-        function(request, sender, sendResponse) {
-          console.log(sender);
+    setViewMap() {
+        for (let card of this.cards) {
+            let id = this.getCardID(card)
+            this.viewMap.set(id, new MangaInfo(card, null, null))
         }
-    );
+    }
+
+    setViewMapApiInfo(handler) {
+        handler.idLookup([...this.viewMap.keys()])
+        for (let key of this.viewMap.keys()) {
+
+        }
+    }
 }
 
-let connect = function () {
-    let port = openConnection()
-    listenForConnectionMessages(port)
-    listenForMessages()
-    return port
-}
-let port = connect()
-port.postMessage({type:'idGet', idList:['371bb8db-b84a-495e-bdb6-a744da3c2f5e']});
+class BackgroundHandler {
 
+    constructor(name) {
+        this.name = name
+        this.port = null
+    }
+
+    listenForConnectionMessages (view=null) {
+        if (!this.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
+        this.port.onMessage.addListener(function(msg, sender) {
+            
+            if (msg.type === 'idGet_Response') {
+                console.log('idGet response recieved. \n', msg)
+                if (view) {
+                    for (let res of msg.body.data) {
+                        if (view.viewMap.has(res.id)) view.viewMap.get(res.id).fullInfo = res
+                        else view.viewMap.set(res.id, new MangaInfo(null, res, null))
+                    }
+                }
+            }
+          });
+    }
+    openConnection() {
+        this.port = chrome.runtime.connect({name: this.name})
+        return this.port
+
+    }
+    listenForMessages () {
+        chrome.runtime.onMessage.addListener(
+            function(request, sender, sendResponse) {
+              console.log(sender);
+            }
+        );
+    }
+
+    idLookup(ids) {
+        this.port.postMessage({type:'idGet', idList:ids});
+    }
+
+    connect() {
+        this.openConnection()
+        this.listenForConnectionMessages()
+        this.listenForMessages()
+        return this.port
+    }
+}
+
+let Handler = new BackgroundHandler('API_Controller')
 let V = new View()
 
-let mangaCards = document.querySelectorAll('.manga-card')
+Handler.connect()
+
 new MutationObserver(()=> {
     const newCards = document.querySelectorAll('.manga-card')
-    if (mangaCards[0] !== newCards[0]) {
-        mangaCards = newCards
+    if (V.cards[0] !== newCards[0]) {
         V.updateSeenCards()
-        console.log(V.cards)
+        V.setViewMap()
+        Handler.idLookup([...V.viewMap.keys()])
+        console.log(V.viewMap)
     }
 }).observe(document, {subtree: true, childList: true})

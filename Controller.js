@@ -10,7 +10,7 @@ globals.Controller = class Controller {
       globals.activeConnection.startMessageListener(port, async function(msg) {
         if (msg.type === "idGet") {
           let mangaList = await globals.activeModel.getMangaByID(100, 0, msg.idList)
-          port.postMessage(mangaList);
+          port.postMessage({type:'idGet_Response', body:mangaList});
         }
         if (msg.type === "lookupHistory") {
             port.postMessage(globals.activeModel.history)
@@ -19,13 +19,6 @@ globals.Controller = class Controller {
     }
   
     backgroundMessageCallback(request, sender, sendResponse) {
-      console.log(`
-Message recieved by service worker. 
-Sender:`, sender, `
-Request: `, request);
-        if (request.type === "getName") {
-            sendResponse({msg:globals.activeConnection.name})
-        }
         sendResponse({msg:`background.js recieved a message from ${sender.id} and has successfully sent a response`})
     }
   
