@@ -16,7 +16,10 @@ export const main = async () => {
         if (V.cards[0] !== newCards[0]) {
             V.updateSeenCards()
             Handler.setContainers(V)
-            Handler.idLookup([...Handler.dataMap.keys()])
+            let newManga = []
+            for (let key of Handler.dataMap.keys()) if (Handler.dataMap.get(key).fullInfo === null) newManga.push(key)
+
+            Handler.idLookup(newManga)
             console.log(Handler)
         }
     }).observe(document, {subtree: true, childList: true})
