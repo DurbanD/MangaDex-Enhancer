@@ -27,6 +27,7 @@
     {
       "matches":["https://*.mangadex.org/*","http://*.mangadex.org/*"],
       "js": ["contentscript.js"],
+      "css":["content/style.css"],
       "run_at": "document_idle"
     }
   ],
