@@ -15,7 +15,7 @@ export const main = async () => {
         if (V.cards[0] !== newCards[0] && newCards.length > 0) {
             V.updateSeenCards()
             Handler.updateDataMap(V)
-            
+            V.setCounters()
             console.log(Handler)
         }
     }).observe(document, {subtree: true, childList: true})

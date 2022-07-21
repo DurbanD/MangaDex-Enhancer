@@ -14,7 +14,17 @@ export default class View {
     }
 
     setCounters() {
+        for (let card of this.cards) {
+            let container = document.createElement('div'),
+                counter = document.createElement('p')
 
+            container.classList = 'counter_container_MDP'
+            counter.classList = 'counter_count_MDP'
+            counter.innerText = '0 / 0'
+
+            container.appendChild(counter)
+            card.appendChild(container)
+        }
     }
 
     setFavored() {
