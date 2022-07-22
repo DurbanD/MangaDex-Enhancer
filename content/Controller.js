@@ -94,7 +94,7 @@ export default class Controller {
         for (let key of this.dataMap.keys()) if (this.dataMap.get(key).fullInfo === null) newManga.push(key)
         this.sendMessage('idGet', { idList: newManga})
         // this.sendMessage('chapterGet', { idList: newManga})
-        // this.sendMessage('readGet', { idList: newManga})
+        if (this.authTokens.session !== null) this.sendMessage('readGet', { idList: newManga, token: this.authTokens.session})
     }
 
     getTokens(view) {

@@ -22,11 +22,19 @@ globals.Model = class Model {
         return chapterList
     }
 
-    async getReadManga (limit, offset, idList=[]) {
-        let query = `/manga/read?limit=${limit}&offset=${offset}`
+    async getReadManga (idList, token) {
+        let query = `/manga/read?`
         for (let id of idList) query += `&ids[]=${id}`
+        console.log(query)
+        let payload = {
+            headers: {
+                'accept' : 'application/json',
+                'Authorization' : token
+            },
+            method: "GET"
+        }
 
-        let readList = await fetch(this.API_URL+query).then(res=>res.json()).then(data=>data)
+        let readList = await fetch(this.API_URL+query, payload).then(res=>res.json()).then(data=>data)
         this.history.push(readList)
         return readList
     }

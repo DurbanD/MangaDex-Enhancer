@@ -19,7 +19,8 @@ globals.Controller = class Controller {
             type = "chapterGet_Response"
             break
           case "readGet":
-            body = await globals.activeModel.getReadManga(100, 0, msg.body.idList)
+            console.log('readGet recieved: ', msg)
+            body = await globals.activeModel.getReadManga(msg.body.idList, msg.body.token)
             type = "readGet_Response"
             break
           case "lookupHistory":
