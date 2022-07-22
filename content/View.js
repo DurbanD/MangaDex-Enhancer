@@ -34,6 +34,20 @@ export default class View {
 
     }
 
+    getCookie(name) {
+        let nameRegex = new RegExp(name + '='),
+        decodedCookie = decodeURIComponent(document.cookie),
+        cookies = decodedCookie.split(';');
+
+        for (let cookie of cookies) {
+            if (nameRegex.test(cookie)) {
+                let res = cookie.trim()
+                return res.substring(name.length + 1, res.length)
+            }
+        }
+        return null
+    }
+
     copyLogin(form, controller) {
         if (this.loginListeners.has(form) || form.querySelector('input[title=Username]') === null) return
 

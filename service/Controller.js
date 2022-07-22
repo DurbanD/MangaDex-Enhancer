@@ -27,9 +27,13 @@ globals.Controller = class Controller {
             type = "history_Response"
             break
           case "login":
-            console.log('Service Worker Recieved Login Request... \nLogin Msg: ', msg)
             body = await globals.activeModel.login(msg.body.username, msg.body.password)
             type = 'login_Response'
+            break
+          case "checkAuth":
+            body = await globals.activeModel.checkAuth(msg.body.token)
+            type = 'checkAuth_Response'
+            break
           default:
             break
         }

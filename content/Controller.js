@@ -12,10 +12,14 @@ export default class Controller {
     static port = null
     constructor(name) {
         if (Controller.name !== '') throw Error('Content Controller already exists')
-        this.name = name
-        Controller.name = this.name
+        Controller.name = name
+        this.name = Controller.name
         this.port = Controller.port
         this.dataMap = Controller.dataMap
+        this.authTokens = {
+            session:null,
+            refresh:null
+        }
     }
 
     setContainers(view) {
@@ -32,7 +36,7 @@ export default class Controller {
 
             switch (msg.type){
                 case "idGet_Response":
-                    console.log('idGet response recieved. \n', msg)
+                    // console.log('idGet response recieved. \n', msg)
                     if (msg.body.result !== "ok") throw Error('idGet Failed: \n', msg)
                     else {
                         for (let res of msg.body.data) {
@@ -48,6 +52,9 @@ export default class Controller {
                     console.log(msg)    
                     break
                 case "login_Response":
+                    console.log(msg)
+                    break
+                case 'checkAuth_Response':
                     console.log(msg)
                     break
                 default: 
@@ -88,5 +95,22 @@ export default class Controller {
         this.sendMessage('idGet', { idList: newManga})
         // this.sendMessage('chapterGet', { idList: newManga})
         // this.sendMessage('readGet', { idList: newManga})
+    }
+
+    getTokens(view) {
+        let session = view.getCookie('auth._token.local'),
+        refresh = view.getCookie('auth._refresh_token.local')
+
+        return {
+            session: session,
+            refresh: refresh
+        }
+    }
+
+    setTokens(tokens) {
+        this.authTokens = {
+            session : tokens.session,
+            refresh : tokens.refresh
+        }
     }
 }

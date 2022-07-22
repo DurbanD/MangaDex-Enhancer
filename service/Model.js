@@ -55,4 +55,21 @@ globals.Model = class Model {
         return this.authToken
 
     }
+
+    async checkAuth (token) {
+        let query = '/auth/check',
+        payload = {
+            headers: {
+                'accept' : 'application/json',
+                'Authorization' : token
+            },
+            method: "GET"
+        }
+
+        console.log(payload)
+        let auth = await fetch(this.API_URL + query, payload).then(res=>res.json()).then(data=>data)
+        this.history.push(auth)
+
+        return auth
+    }
   }

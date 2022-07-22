@@ -13,6 +13,7 @@ export const main = async () => {
     new MutationObserver(()=> {
         const newCards = document.querySelectorAll('.manga-card')
         const forms = document.querySelectorAll('form')
+        const authCookies = Handler.getTokens(V)
         if (V.cards[0] !== newCards[0] && newCards.length > 0) {
             V.updateSeenCards()
             Handler.updateDataMap(V)
@@ -25,6 +26,11 @@ export const main = async () => {
                 console.log('Login Detected')
                 V.copyLogin(form, Handler)
             }
+        }
+        if (authCookies.session !== Handler.authTokens.session) {
+            Handler.setTokens(authCookies)
+            Handler.sendMessage('checkAuth', {token: Handler.authTokens.session})
+            console.log(Handler.authTokens)
         }
     }).observe(document, {subtree: true, childList: true})
 }
