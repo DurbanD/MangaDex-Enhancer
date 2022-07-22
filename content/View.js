@@ -42,7 +42,6 @@ export default class View {
                 username : document.querySelector('input[title=Username]').value,
                 password : document.querySelector('input[title=Password]').value
             }
-            console.log(loginInfo)
             controller.sendMessage('login', loginInfo)
         }
 
