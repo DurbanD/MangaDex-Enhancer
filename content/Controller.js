@@ -29,26 +29,31 @@ export default class Controller {
     listenForConnectionMessages () {
         if (!this.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
         this.port.onMessage.addListener(function(msg, sender) {
-            
-            if (msg.type === 'idGet_Response') {
-                console.log('idGet response recieved. \n', msg)
-                if (msg.body.result !== "ok") throw Error('idGet Failed: \n', msg)
-                else {
-                    for (let res of msg.body.data) {
-                        if (Controller.dataMap.has(res.id)) Controller.dataMap.get(res.id).fullInfo = res
-                        else Controller.dataMap.set(res.id, new MangaInfo(null, res, null))
-                    }
-                } 
-            }
 
-            if (msg.type === 'chapterGet_Response') {
-                console.log(msg)
+            switch (msg.type){
+                case "idGet_Response":
+                    console.log('idGet response recieved. \n', msg)
+                    if (msg.body.result !== "ok") throw Error('idGet Failed: \n', msg)
+                    else {
+                        for (let res of msg.body.data) {
+                            if (Controller.dataMap.has(res.id)) Controller.dataMap.get(res.id).fullInfo = res
+                            else Controller.dataMap.set(res.id, new MangaInfo(null, res, null))
+                        }
+                    } 
+                    break
+                case "chapterGet_Response":
+                    console.log(msg)
+                    break
+                case "readGet_Response":
+                    console.log(msg)    
+                    break
+                case "login_Response":
+                    console.log(msg)
+                    break
+                default: 
+                    console.log(msg)
+                    break
             }
-
-            if(msg.type === "readGet_Response") {
-                console.log(msg)
-            }
-
           });
     }
 
@@ -65,15 +70,10 @@ export default class Controller {
         );
     }
 
-    idLookup(type, ids) {
+    sendMessage(type, body) {
         if (!this.port) this.connect()
-        this.port.postMessage({type: type, idList:ids});
+        this.port.postMessage({type: type, body:body});
     }
-
-    // chapterLookup(ids) {
-    //     if (!this.port) this.connect()
-    //     this.port.postMessage({})
-    // }
 
     connect() {
         this.openConnection()
@@ -85,8 +85,8 @@ export default class Controller {
         if (view) this.setContainers(view)
         let newManga = []
         for (let key of this.dataMap.keys()) if (this.dataMap.get(key).fullInfo === null) newManga.push(key)
-        this.idLookup('idGet', newManga)
-        this.idLookup('chapterGet', newManga)
-        this.idLookup('readGet', newManga)
+        this.sendMessage('idGet', { idList: newManga})
+        // this.sendMessage('chapterGet', { idList: newManga})
+        // this.sendMessage('readGet', { idList: newManga})
     }
 }

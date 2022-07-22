@@ -23,7 +23,7 @@ export const main = async () => {
         for (let form of forms) {
             if (/Log In/.test(form.innerText)) {
                 console.log('Login Detected')
-                V.copyLogin(form)
+                V.copyLogin(form, Handler)
             }
         }
     }).observe(document, {subtree: true, childList: true})

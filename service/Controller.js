@@ -11,21 +11,25 @@ globals.Controller = class Controller {
         let body, type
         switch (msg.type) {
           case "idGet":
-            body = await globals.activeModel.getMangaByID(100, 0, msg.idList)
+            body = await globals.activeModel.getMangaByID(100, 0, msg.body.idList)
             type = "idGet_Response"
             break
           case "chapterGet":
-            body = await globals.activeModel.getChapterByID(100, 0, msg.idList)
+            body = await globals.activeModel.getChapterByID(100, 0, msg.body.idList)
             type = "chapterGet_Response"
             break
           case "readGet":
-            body = await globals.activeModel.getReadManga(100, 0, msg.idList)
+            body = await globals.activeModel.getReadManga(100, 0, msg.body.idList)
             type = "readGet_Response"
             break
           case "lookupHistory":
             body = globals.activeModel.history
             type = "history_Response"
             break
+          case "login":
+            console.log('Service Worker Recieved Login Request... \nLogin Msg: ', msg)
+            body = await globals.activeModel.login(msg.body.username, msg.body.password)
+            type = 'login_Response'
           default:
             break
         }

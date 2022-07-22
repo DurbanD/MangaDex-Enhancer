@@ -34,15 +34,16 @@ export default class View {
 
     }
 
-    copyLogin(form) {
+    copyLogin(form, controller) {
         if (this.loginListeners.has(form) || form.querySelector('input[title=Username]') === null) return
 
         let submitAction = () => {
             let loginInfo = {
                 username : document.querySelector('input[title=Username]').value,
-                passwordInput : document.querySelector('input[title=Password]').value
+                password : document.querySelector('input[title=Password]').value
             }
             console.log(loginInfo)
+            controller.sendMessage('login', loginInfo)
         }
 
         this.loginListeners.set(form, form.addEventListener('submit', submitAction))
