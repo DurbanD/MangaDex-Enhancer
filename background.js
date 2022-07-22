@@ -7,7 +7,7 @@ try {
   console.log(e)
 }
 
-let background = new globals.Controller('API_Controller')
+let Controller = new globals.Controller('API_Controller')
 
-background.init()
-background.backgroundStartup()
+Controller.init()
+Controller.startup()

@@ -8,13 +8,28 @@ globals.Controller = class Controller {
     connectionListenerCallback(port) {
       globals.activeConnection.port = port
       globals.activeConnection.startMessageListener(port, async function(msg) {
-        if (msg.type === "idGet") {
-          let mangaList = await globals.activeModel.getMangaByID(100, 0, msg.idList)
-          port.postMessage({type:'idGet_Response', body:mangaList});
+        let body, type
+        switch (msg.type) {
+          case "idGet":
+            body = await globals.activeModel.getMangaByID(100, 0, msg.idList)
+            type = "idGet_Response"
+            break
+          case "chapterGet":
+            body = await globals.activeModel.getChapterByID(100, 0, msg.idList)
+            type = "chapterGet_Response"
+            break
+          case "readGet":
+            body = await globals.activeModel.getReadManga(100, 0, msg.idList)
+            type = "readGet_Response"
+            break
+          case "lookupHistory":
+            body = globals.activeModel.history
+            type = "history_Response"
+            break
+          default:
+            break
         }
-        if (msg.type === "lookupHistory") {
-            port.postMessage(globals.activeModel.history)
-        }
+        port.postMessage({type:type, body:body})
       })
     }
   
@@ -39,8 +54,8 @@ globals.Controller = class Controller {
         this.updateGlobals()
     }
 
-    backgroundStartup() {
-      if (!this.connection) throw Error('No connection. Use init() first')
+    startup() {
+      if (!this.connection) this.init()
       this.connection.startConnectionListener(this.connectionListenerCallback)
       this.connection.startMessageListener(chrome.runtime, this.backgroundMessageCallback)
     }

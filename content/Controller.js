@@ -41,6 +41,14 @@ export default class Controller {
                 } 
             }
 
+            if (msg.type === 'chapterGet_Response') {
+                console.log(msg)
+            }
+
+            if(msg.type === "readGet_Response") {
+                console.log(msg)
+            }
+
           });
     }
 
@@ -57,10 +65,15 @@ export default class Controller {
         );
     }
 
-    idLookup(ids) {
+    idLookup(type, ids) {
         if (!this.port) this.connect()
-        this.port.postMessage({type:'idGet', idList:ids});
+        this.port.postMessage({type: type, idList:ids});
     }
+
+    // chapterLookup(ids) {
+    //     if (!this.port) this.connect()
+    //     this.port.postMessage({})
+    // }
 
     connect() {
         this.openConnection()
@@ -72,6 +85,8 @@ export default class Controller {
         if (view) this.setContainers(view)
         let newManga = []
         for (let key of this.dataMap.keys()) if (this.dataMap.get(key).fullInfo === null) newManga.push(key)
-        this.idLookup(newManga)
+        this.idLookup('idGet', newManga)
+        this.idLookup('chapterGet', newManga)
+        this.idLookup('readGet', newManga)
     }
 }

@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="button.css">
+    <link rel="stylesheet" href="popup.css">
   </head>
   <body>
-    <button id="changeColor"></button>
-    <script src="popup.js"></script>
+    <script src="popup.js" type="module"></script>
+    <img src="" alt="" id="md-logo-popup">
+    <form action="" id="login-form">
+      <div id="form-username">
+        <label for="name">Username: </label>
+        <input type="text" name="username" id="username-input">
+      </div>
+      <div id="form-password">
+        <label for="password">Password: </label>
+        <input type="text" name="password" id="password-input">
+      </div>
+      <button type="submit" id="form-submit"></button>
+    </form>
   </body>
 </html>

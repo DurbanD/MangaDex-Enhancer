@@ -1,6 +1,9 @@
 export default class View {
+
     constructor() {
         this.cards = document.querySelectorAll('.manga-card')
+        this.loginListeners = new Map()
+        this.logOutListeners = new Map()
     }
 
     updateSeenCards() {
@@ -29,6 +32,24 @@ export default class View {
 
     setFavored() {
 
+    }
+
+    copyLogin(form) {
+        if (this.loginListeners.has(form) || form.querySelector('input[title=Username]') === null) return
+
+        let submitAction = () => {
+            let loginInfo = {
+                username : document.querySelector('input[title=Username]').value,
+                passwordInput : document.querySelector('input[title=Password]').value
+            }
+            console.log(loginInfo)
+        }
+
+        this.loginListeners.set(form, form.addEventListener('submit', submitAction))
+    }
+
+    static clearLogin() {
+        this.loginListeners = new Map()
     }
 
 }

@@ -12,11 +12,19 @@ export const main = async () => {
 
     new MutationObserver(()=> {
         const newCards = document.querySelectorAll('.manga-card')
+        const forms = document.querySelectorAll('form')
         if (V.cards[0] !== newCards[0] && newCards.length > 0) {
             V.updateSeenCards()
             Handler.updateDataMap(V)
             V.setCounters()
             console.log(Handler)
+
+        }
+        for (let form of forms) {
+            if (/Log In/.test(form.innerText)) {
+                console.log('Login Detected')
+                V.copyLogin(form)
+            }
         }
     }).observe(document, {subtree: true, childList: true})
 }
