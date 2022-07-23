@@ -4,39 +4,63 @@ globals.Model = class Model {
         this.history = []
         this.authToken = null
     }
-    async getMangaByID (limit, offset, idList=[]) {
-        let query = `/manga?limit=${limit}&offset=${offset}`
-        for (let id of idList) query += `&ids[]=${id}`
-      
-        let mangaList = await fetch(this.API_URL+query).then(res=>res.json()).then(data=>data)
-        this.history.push(mangaList)
-        return mangaList
-    }
 
-    async getChapterByID (limit, offset, idList=[]) {
-        let query = `/chapter?limit=${limit}&offset=${offset}`
-        for (let id of idList) query += `&ids[]=${id}`
+    async sendRequest (type, body) {
+        let query = '', payload
+        switch (type) {
+            case 'get_rating':
+                query = '/rating?'
+                payload = {
+                    headers: {
+                        'accept' : 'application/json',
+                        'Authorization' : body.token
+                    },
+                    method: "GET"
+                }
+                for (let id of body.idList) query += `&manga[]=${id}`
+                break
 
-        let chapterList = await fetch(this.API_URL+query).then(res=>res.json()).then(data=>data)
-        this.history.push(chapterList)
-        return chapterList
-    }
+            case 'get_read':
+                query = `/manga/read?`
+                payload = {
+                    headers: {
+                        'accept' : 'application/json',
+                        'Authorization' : body.token
+                    },
+                    method: "GET"
+                }
+                for (let id of body.idList) query += `&ids[]=${id}`
+                break
 
-    async getReadManga (idList, token) {
-        let query = `/manga/read?`
-        for (let id of idList) query += `&ids[]=${id}`
-        console.log(query)
-        let payload = {
-            headers: {
-                'accept' : 'application/json',
-                'Authorization' : token
-            },
-            method: "GET"
+            case 'get_manga':
+                query = `/manga?limit=${body.limit || 100}&offset=${body.offset || 0}`
+                for (let id of body.idList) query += `&ids[]=${id}`
+                break
+            
+            case 'get_auth':
+                query = '/auth/check'
+                payload = {
+                    headers: {
+                        'accept' : 'application/json',
+                        'Authorization' : body.token
+                    },
+                    method: "GET"
+                }
+                break
+            
+            case 'get_chapter':
+                if (!body.idList) return
+                query = `/chapter?limit=${body.limit || 100}&offset=${body.offset || 0}`
+                for (let id of body.idList) query += `&ids[]=${id}`
+                break
+            
+            default:
+                console.log(`sendRequest type ${type} defaulted. Body: `, body)
         }
 
-        let readList = await fetch(this.API_URL+query, payload).then(res=>res.json()).then(data=>data)
-        this.history.push(readList)
-        return readList
+        let request = await fetch(this.API_URL+query, payload).then(res=>res.json()).then(data=>data)
+        this.history.push(request)
+        return request
     }
 
     async login (username, password) {
@@ -64,20 +88,4 @@ globals.Model = class Model {
 
     }
 
-    async checkAuth (token) {
-        let query = '/auth/check',
-        payload = {
-            headers: {
-                'accept' : 'application/json',
-                'Authorization' : token
-            },
-            method: "GET"
-        }
-
-        console.log(payload)
-        let auth = await fetch(this.API_URL + query, payload).then(res=>res.json()).then(data=>data)
-        this.history.push(auth)
-
-        return auth
-    }
   }

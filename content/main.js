@@ -29,7 +29,7 @@ export const main = async () => {
         }
         if (authCookies.session !== Handler.authTokens.session) {
             Handler.setTokens(authCookies)
-            Handler.sendMessage('checkAuth', {token: Handler.authTokens.session})
+            Handler.sendMessage('get_auth', {token: Handler.authTokens.session})
             console.log(Handler.authTokens)
         }
     }).observe(document, {subtree: true, childList: true})

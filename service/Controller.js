@@ -10,18 +10,9 @@ globals.Controller = class Controller {
       globals.activeConnection.startMessageListener(port, async function(msg) {
         let body, type
         switch (msg.type) {
-          case "idGet":
-            body = await globals.activeModel.getMangaByID(100, 0, msg.body.idList)
-            type = "idGet_Response"
-            break
           case "chapterGet":
             body = await globals.activeModel.getChapterByID(100, 0, msg.body.idList)
             type = "chapterGet_Response"
-            break
-          case "readGet":
-            console.log('readGet recieved: ', msg)
-            body = await globals.activeModel.getReadManga(msg.body.idList, msg.body.token)
-            type = "readGet_Response"
             break
           case "lookupHistory":
             body = globals.activeModel.history
@@ -34,6 +25,27 @@ globals.Controller = class Controller {
           case "checkAuth":
             body = await globals.activeModel.checkAuth(msg.body.token)
             type = 'checkAuth_Response'
+            break
+          case "get_rating":
+            body = await globals.activeModel.sendRequest('get_rating', {idList:msg.body.idList, token:msg.body.token})
+            type = 'get_rating_response'
+            break
+          case 'get_read':
+            body = await globals.activeModel.sendRequest('get_read', {idList:msg.body.idList, token:msg.body.token})
+            type = 'get_read_response'
+            break
+          case 'get_manga':
+            body = await globals.activeModel.sendRequest('get_manga', {idList:msg.body.idList})
+            type = 'get_manga_response'
+            break
+          case 'get_auth':
+            body = await globals.activeModel.sendRequest('get_auth', {token:msg.body.token})
+            type = 'get_auth_response'
+            break
+          case 'get_chapter':
+            console.log('get_chapter request recieved: \n', msg)
+            body = await globals.activeModel.sendRequest('get_chapter', {idList: msg.body.idList})
+            type = 'get_chapter_response'
             break
           default:
             break
