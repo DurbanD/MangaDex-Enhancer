@@ -27,10 +27,12 @@ globals.Controller = class Controller {
             type = 'checkAuth_Response'
             break
           case "get_rating":
+            if (!msg.body.token) break
             body = await globals.activeModel.sendRequest('get_rating', {idList:msg.body.idList, token:msg.body.token})
             type = 'get_rating_response'
             break
           case 'get_read':
+            if (!msg.body.token) break
             body = await globals.activeModel.sendRequest('get_read', {idList:msg.body.idList, token:msg.body.token})
             type = 'get_read_response'
             break
@@ -39,6 +41,7 @@ globals.Controller = class Controller {
             type = 'get_manga_response'
             break
           case 'get_auth':
+            if (!msg.body.token) break
             body = await globals.activeModel.sendRequest('get_auth', {token:msg.body.token})
             type = 'get_auth_response'
             break
@@ -48,10 +51,12 @@ globals.Controller = class Controller {
             type = 'get_chapter_response'
             break
           case 'get_user':
+            if (!msg.body.token) break
             body = await globals.activeModel.sendRequest('get_user', {userID: msg.body.userID, token: msg.body.token})
             type = 'get_user_response'
             break
           case 'get_user_settings':
+            if (!msg.body.token) break
             body = await globals.activeModel.sendRequest('get_user_settings', {token: msg.body.token})
             type = 'get_user_settings_response'
             break
