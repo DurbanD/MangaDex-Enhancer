@@ -6,7 +6,7 @@ globals.Model = class Model {
     }
 
     async sendRequest (type, body) {
-        let query = '', payload
+        let query = '', payload, requestURL, request
         let basicAuthPayload = {
             headers: {
                 'accept' : 'application/json',
@@ -61,7 +61,10 @@ globals.Model = class Model {
                 break
         }
 
-        let request = await fetch(this.API_URL+query, payload).then(res=>res.json()).then(data=>data)
+        requestURL = this.API_URL+query
+        console.log(`Sending Request ${type}... \n`, requestURL, payload)
+        request = await fetch(requestURL, payload).then(res=>res.json()).then(data=>data)
+        
         this.history.push(request)
         return request
     }

@@ -66,14 +66,12 @@ export default class Controller {
                         if (Controller.dataMap.has(id)) Controller.dataMap.get(id).userInfo.rating = msg.body.ratings[id].rating
                         else Controller.dataMap.set(id, new MangaInfo(null,null, {read: null, rating:null}))
                     }
-                    console.log(msg)
                     break
                 case 'get_read_response':
                     if (msg.body === null) break
                     if (msg.body.result !== "ok") throw Error('get_read failed! \n', msg)
                     else {
                         let readChapters = msg.body.data
-                        console.log(msg)
                         while (readChapters.length > 0) Controller.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
                     }
                     break
@@ -95,8 +93,8 @@ export default class Controller {
                     console.log(msg)
                     break
                 case 'get_user_response':
-                    Controller.user.account = msg.body.data
                     console.log(msg)
+                    Controller.user.account = msg.body.data
                     break
                 case 'get_user_settings_response':
                     Controller.user.settings = msg.body.data
@@ -111,6 +109,7 @@ export default class Controller {
 
     static openConnection() {
         Controller.port = chrome.runtime.connect({name: Controller.name})
+        Controller.port.onDisconnect.addListener(()=> Controller.port = null)
         return Controller.port
 
     }
@@ -175,6 +174,6 @@ export default class Controller {
         view.updateSeenCards()
         this.updateDataMap(view)
         this.setTokens(this.getTokens(view))
-        if (this.user.account === null) this.setUser()
+        if (!this.user.account) this.setUser()
     }
 }
