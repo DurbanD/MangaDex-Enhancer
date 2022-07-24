@@ -47,6 +47,14 @@ globals.Controller = class Controller {
             body = await globals.activeModel.sendRequest('get_chapter', {idList: msg.body.idList})
             type = 'get_chapter_response'
             break
+          case 'get_user':
+            body = await globals.activeModel.sendRequest('get_user', {userID: msg.body.userID, token: msg.body.token})
+            type = 'get_user_response'
+            break
+          case 'get_user_settings':
+            body = await globals.activeModel.sendRequest('get_user_settings', {token: msg.body.token})
+            type = 'get_user_settings_response'
+            break
           default:
             break
         }

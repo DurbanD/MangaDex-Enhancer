@@ -13,6 +13,10 @@ export default class Controller {
     static name = ''
     static dataMap = new Map()
     static port = null
+    static user = {
+        account: null,
+        settings: null
+    }
     constructor(name) {
         if (Controller.name !== '') throw Error('Content Controller already exists')
         Controller.name = name
@@ -22,7 +26,8 @@ export default class Controller {
         this.authTokens = {
             session:null,
             refresh:null
-        }
+        },
+        this.user = Controller.user
     }
 
     static sendMessage(type, body) {
@@ -64,6 +69,7 @@ export default class Controller {
                     console.log(msg)
                     break
                 case 'get_read_response':
+                    if (msg.body === null) break
                     if (msg.body.result !== "ok") throw Error('get_read failed! \n', msg)
                     else {
                         let readChapters = msg.body.data
@@ -88,6 +94,14 @@ export default class Controller {
                 case 'get_auth_Response':
                     console.log(msg)
                     break
+                case 'get_user_response':
+                    Controller.user.account = msg.body.data
+                    console.log(msg)
+                    break
+                case 'get_user_settings_response':
+                    Controller.user.settings = msg.body.data
+                    console.log(msg)
+                    break
                 default: 
                     console.log(msg)
                     break
@@ -96,8 +110,8 @@ export default class Controller {
     }
 
     static openConnection() {
-        this.port = chrome.runtime.connect({name: this.name})
-        return this.port
+        Controller.port = chrome.runtime.connect({name: Controller.name})
+        return Controller.port
 
     }
     static listenForMessages () {
@@ -115,7 +129,8 @@ export default class Controller {
     }
 
     connect() {
-        return Controller.connect()
+        Controller.connect()
+        this.port = Controller.port
     }
 
     updateDataMap(view) {
@@ -147,5 +162,19 @@ export default class Controller {
             session : tokens.session,
             refresh : tokens.refresh
         }
+    }
+
+    setUser() {
+        if (!this.authTokens.session) throw Error('No user to set in Controller.setUser()')
+        Controller.sendMessage('get_user', { userID: 'me', token: this.authTokens.session })
+        Controller.sendMessage('get_user_settings', { token: this.authTokens.session })
+    }
+
+    refresh(view) {
+        if (!this.port) this.connect()
+        view.updateSeenCards()
+        this.updateDataMap(view)
+        this.setTokens(this.getTokens(view))
+        if (this.user.account === null) this.setUser()
     }
 }
