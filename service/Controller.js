@@ -60,6 +60,10 @@ globals.Controller = class Controller {
             body = await globals.activeModel.sendRequest('get_user_settings', {token: msg.body.token})
             type = 'get_user_settings_response'
             break
+          case 'get_aggregate' :
+            body = await globals.activeModel.sendRequest('get_aggregate', {id : msg.body.id, language : msg.body.language || 'en'})
+            body.manga_id = msg.body.id
+            type = 'get_aggregate_response'
           default:
             break
         }

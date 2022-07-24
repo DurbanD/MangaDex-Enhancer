@@ -7,6 +7,7 @@ class Manga {
             read : [],
             rating: null
         }
+        this.aggregate = null
     }
 }
 
@@ -90,6 +91,13 @@ export default class Controller {
                         }
                     }
                     break
+                case 'get_aggregate_response' :
+                    if (!msg.body) break
+                    // console.log(msg)
+                    if (msg.body.result === "ok") {
+                        if (Controller.dataMap.has(msg.body.manga_id)) Controller.dataMap.get(msg.body.manga_id).aggregate = msg.body.volumes
+                    }
+                    break
                 case "login_Response":
                     break
                 case 'get_auth_Response':
@@ -144,6 +152,9 @@ export default class Controller {
             Controller.sendMessage('get_manga', { idList: newManga})
             Controller.sendMessage('get_read', { idList: newManga, token: this.authTokens.session})
             Controller.sendMessage('get_rating', { idList: newManga, token: this.authTokens.session})
+            for (let manga of newManga) {
+                Controller.sendMessage('get_aggregate', {id: manga, language:['en']})
+            }
         }
     }
 

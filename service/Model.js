@@ -56,6 +56,14 @@ globals.Model = class Model {
                 payload = basicAuthPayload
                 break
 
+            case 'get_aggregate' :
+                if (!body.id) return
+                query = `/manga/${body.id}/aggregate?`
+                if (body.language) {
+                    for (let lang of body.language) query += `&translatedLanguage[]=${lang}`
+                }
+                else query += `&translatedLanguage[]=en`
+
             default:
                 console.log(`sendRequest type ${type} defaulted. Body: `, body)
                 break
