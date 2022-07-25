@@ -9,6 +9,7 @@ class Manga {
         }
         this.aggregate = null
         this.newestChapter = 0
+        this.newestRead = 0
     }
 }
 
@@ -87,7 +88,10 @@ export default class Controller {
                             let id = ''
                             for (let relationship of res.relationships) if (relationship.type === 'manga') {
                                 id = relationship.id
-                                if (Controller.dataMap.has(id)) Controller.dataMap.get(id).user.read.push(res)
+                                if (Controller.dataMap.has(id)) { 
+                                    Controller.dataMap.get(id).user.read.push(res)
+                                    Controller.dataMap.get(id).newestRead = Math.max(Controller.dataMap.get(id).newestRead, parseFloat(res.attributes.chapter))
+                                }
                             }
                         }
                     }
