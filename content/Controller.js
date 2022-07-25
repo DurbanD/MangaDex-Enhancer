@@ -8,6 +8,7 @@ class Manga {
             rating: null
         }
         this.aggregate = null
+        this.newestChapter = 0
     }
 }
 
@@ -93,9 +94,15 @@ export default class Controller {
                     break
                 case 'get_aggregate_response' :
                     if (!msg.body) break
-                    // console.log(msg)
                     if (msg.body.result === "ok") {
-                        if (Controller.dataMap.has(msg.body.manga_id)) Controller.dataMap.get(msg.body.manga_id).aggregate = msg.body.volumes
+                        if (Controller.dataMap.has(msg.body.manga_id)) {
+                            Controller.dataMap.get(msg.body.manga_id).aggregate = msg.body.volumes
+                            for (let vol of Object.values(msg.body.volumes)) {
+                                for (let ch of Object.values(vol.chapters)) {
+                                    if (parseFloat(ch.chapter) > Controller.dataMap.get(msg.body.manga_id).newestChapter) Controller.dataMap.get(msg.body.manga_id).newestChapter = parseFloat(ch.chapter)
+                                }
+                            }
+                        }
                     }
                     break
                 case "login_Response":
