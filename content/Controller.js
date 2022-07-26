@@ -70,7 +70,11 @@ export default class Controller {
                     if (msg.body.result === "ok") {
                         for (let id of Object.keys(msg.body.ratings)) {
                             let mangaRating = msg.body.ratings[id].rating
-                            if (Controller.dataMap.has(id)) Controller.dataMap.get(id).user.rating = mangaRating
+                            if (Controller.dataMap.has(id)) {
+                                Controller.dataMap.get(id).user.rating = mangaRating
+                                Controller.dataMap.get(id).container.querySelector('.mdp_rank').innerText = mangaRating
+                                Controller.dataMap.get(id).container.querySelector('.rank_flair').innerText = '🌟'
+                            }
                         }
                     }                    
                     break
@@ -91,6 +95,7 @@ export default class Controller {
                                 if (Controller.dataMap.has(id)) { 
                                     Controller.dataMap.get(id).user.read.push(res)
                                     Controller.dataMap.get(id).newestRead = Math.max(Controller.dataMap.get(id).newestRead, parseFloat(res.attributes.chapter))
+                                    Controller.dataMap.get(id).container.querySelector('.chapter_counter_read_mdp').innerText = Controller.dataMap.get(id).newestRead
                                 }
                             }
                         }
@@ -106,12 +111,14 @@ export default class Controller {
                                     if (parseFloat(ch.chapter) > Controller.dataMap.get(msg.body.manga_id).newestChapter) Controller.dataMap.get(msg.body.manga_id).newestChapter = parseFloat(ch.chapter)
                                 }
                             }
+                            Controller.dataMap.get(msg.body.manga_id).container.querySelector('.chapter_counter_available_mdp').innerText = Controller.dataMap.get(msg.body.manga_id).newestChapter
                         }
                     }
                     break
                 case "login_Response":
                     break
                 case 'get_auth_Response':
+                    if (msg.body.isAuthenticated === false) Controller.sendMessage('refresh_token', {token: Controller.authTokens.refresh})
                     console.log(msg)
                     break
                 case 'get_user_response':
@@ -119,6 +126,9 @@ export default class Controller {
                     break
                 case 'get_user_settings_response':
                     Controller.user.settings = msg.body.data
+                    break
+                case 'refresh_token_response' :
+                    console.log(msg)
                     break
                 default: 
                     console.log(msg)
@@ -193,10 +203,15 @@ export default class Controller {
     }
 
     refresh(view) {
-        if (!this.port) this.connect()
+        if (!this.port) this.port = Controller.connect()
         this.setTokens(this.getTokens(view))
         view.updateSeenCards()
         this.updateDataMap(view)
         if (!this.user.account) this.setUser()
+
+        for (let card of view.cards) {
+            let infoBar = view.attachInfoBar(card)
+            if (this.dataMap.has(view.getCardID(card))) view.updateInfoBar(infoBar, this.dataMap.get(view.getCardID(card)))
+        }
     }
 }

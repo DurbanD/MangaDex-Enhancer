@@ -63,7 +63,13 @@ globals.Model = class Model {
                     for (let lang of body.language) query += `&translatedLanguage[]=${lang}`
                 }
                 else query += `&translatedLanguage[]=en`
-
+                break
+            
+            case 'refresh_token' :
+                if (!body.token) return
+                query = `/auth/refresh`
+                payload = basicAuthPayload
+                break
             default:
                 console.log(`sendRequest type ${type} defaulted. Body: `, body)
                 break

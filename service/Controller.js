@@ -64,6 +64,11 @@ globals.Controller = class Controller {
             body = await globals.activeModel.sendRequest('get_aggregate', {id : msg.body.id, language : msg.body.language || 'en'})
             body.manga_id = msg.body.id
             type = 'get_aggregate_response'
+            break
+          case 'refresh_token' :
+            body = await globals.activeModel.sendRequest('refresh_token', {token : msg.body.token})
+            type = 'refresh_token_response'
+            break
           default:
             break
         }

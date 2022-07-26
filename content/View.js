@@ -2,8 +2,8 @@ export default class View {
 
     constructor() {
         this.cards = document.querySelectorAll('.manga-card')
-        this.loginListeners = new Map()
-        this.logOutListeners = new Map()
+        // this.loginListeners = new Map()
+        // this.logOutListeners = new Map()
     }
 
     updateSeenCards() {
@@ -16,21 +16,71 @@ export default class View {
         return id[0]
     }
 
-    setCounters() {
-        for (let card of this.cards) {
-            let container = document.createElement('div'),
-                counter = document.createElement('p')
+    updateInfoBar(infoBar, Manga) {
+        // console.log('Updating ', infoBar, ' with ', Manga)
+        let counterRead = infoBar.querySelector('.chapter_counter_read_mdp'),
+            counterAvailable = infoBar.querySelector('.chapter_counter_available_mdp'),
+            rank = infoBar.querySelector('.mdp_rank'),
+            rankFlair = infoBar.querySelector('.rank_flair')
 
-            container.classList = 'counter_container_MDP'
-            counter.classList = 'counter_count_MDP'
-            counter.innerText = '0 / 0'
-
-            container.appendChild(counter)
-            card.appendChild(container)
+        counterRead.innerText = `${Manga.newestRead}`
+        counterAvailable.innerText =  `${Manga.newestChapter}`
+        
+        if (Manga.user.rating !== null) {
+            rank.innerText = `${Manga.user.rating}`
+            rankFlair.innerText = '🌟'
+            rankFlair.classList = 'rank_flair mdp_rated_flair'
         }
     }
 
-    setFavored() {
+    attachInfoBar(container) {
+        let infoBar = document.createElement('div')
+        infoBar.classList = 'sub_info_bar_mdp'
+        infoBar.appendChild(this.chapterCounter())
+        infoBar.appendChild(this.rankDisplay())
+
+        container.appendChild(infoBar)
+
+        return infoBar
+    }
+
+    chapterCounter() {
+        let container = document.createElement('div'),
+        counter = document.createElement('p'),
+        read = document.createElement('p'),
+        available = document.createElement('p'),
+        flair = document.createElement('p')
+
+        container.classList = 'counter_container_mdp'
+        read.classList = 'chapter_counter_read_mdp'
+        available.classList = 'chapter_counter_available_mdp'
+        flair.classList = 'chapter_counter_flair_mdp'
+
+        read.innerText = '0'
+        flair.innerText = ' / '
+        available.innerText = '0'
+
+        container.appendChild(read)
+        container.appendChild(flair)
+        container.appendChild(available)
+
+        return container
+    }
+
+    rankDisplay() {
+        let container = document.createElement('div'),
+            rank = document.createElement('p'),
+            flair = document.createElement('p')
+        container.classList = 'rank_container'
+        rank.classList = 'mdp_rank'
+        flair.classList = 'rank_flair'
+
+        rank.innerText = '-'
+        flair.innerText = '⭐'
+        container.appendChild(rank)
+        container.appendChild(flair)
+
+        return container
 
     }
 
@@ -48,22 +98,22 @@ export default class View {
         return null
     }
 
-    copyLogin(form, controller) {
-        if (this.loginListeners.has(form) || form.querySelector('input[title=Username]') === null) return
+    // copyLogin(form, controller) {
+    //     if (this.loginListeners.has(form) || form.querySelector('input[title=Username]') === null) return
 
-        let submitAction = () => {
-            let loginInfo = {
-                username : document.querySelector('input[title=Username]').value,
-                password : document.querySelector('input[title=Password]').value
-            }
-            controller.sendMessage('login', loginInfo)
-        }
+    //     let submitAction = () => {
+    //         let loginInfo = {
+    //             username : document.querySelector('input[title=Username]').value,
+    //             password : document.querySelector('input[title=Password]').value
+    //         }
+    //         controller.sendMessage('login', loginInfo)
+    //     }
 
-        this.loginListeners.set(form, form.addEventListener('submit', submitAction))
-    }
+    //     this.loginListeners.set(form, form.addEventListener('submit', submitAction))
+    // }
 
-    static clearLogin() {
-        this.loginListeners = new Map()
-    }
+    // static clearLogin() {
+    //     this.loginListeners = new Map()
+    // }
 
 }

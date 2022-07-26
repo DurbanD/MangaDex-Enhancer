@@ -1,0 +1,27 @@
+.sub_info_bar_mdp {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 1px solid black;
+    width: 100%;
+}
+
+.rank_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    /* border: 1px solid pink; */
+    width: 30%;
+    padding: 2px 5px;
+}
+
+.counter_container_mdp {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    padding: 2px 5px;
+}
