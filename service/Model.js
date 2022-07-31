@@ -83,29 +83,29 @@ globals.Model = class Model {
         return request
     }
 
-    async login (username, password) {
-        if (this.authToken !== null) return this.authToken
-        let query = '/auth/login',
-        payload = {
-            headers: {
-                'accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            method: "POST",
-            body: JSON.stringify({
-                username: username,
-                email: "",
-                password: password
-            }),  
-        }
-        console.log(payload)
+    // async login (username, password) {
+    //     if (this.authToken !== null) return this.authToken
+    //     let query = '/auth/login',
+    //     payload = {
+    //         headers: {
+    //             'accept': 'application/json',
+    //             'Content-Type': 'application/json'
+    //         },
+    //         method: "POST",
+    //         body: JSON.stringify({
+    //             username: username,
+    //             email: "",
+    //             password: password
+    //         }),  
+    //     }
+    //     console.log(payload)
 
-        let login = await fetch(this.API_URL + query, payload).then(res=>res.json()).then(data=>data)
-        this.history.push(login)
-        if (login.result === "ok") this.authToken = login.token
+    //     let login = await fetch(this.API_URL + query, payload).then(res=>res.json()).then(data=>data)
+    //     this.history.push(login)
+    //     if (login.result === "ok") this.authToken = login.token
 
-        return this.authToken
+    //     return this.authToken
 
-    }
+    // }
 
   }

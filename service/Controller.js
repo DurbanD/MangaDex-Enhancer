@@ -10,18 +10,18 @@ globals.Controller = class Controller {
       globals.activeConnection.startMessageListener(port, async function(msg) {
         let body, type
         switch (msg.type) {
-          case "chapterGet":
-            body = await globals.activeModel.getChapterByID(100, 0, msg.body.idList)
-            type = "chapterGet_Response"
-            break
+          // case "chapterGet":
+          //   body = await globals.activeModel.getChapterByID(100, 0, msg.body.idList)
+          //   type = "chapterGet_Response"
+          //   break
           case "lookupHistory":
             body = globals.activeModel.history
             type = "history_Response"
             break
-          case "login":
-            body = await globals.activeModel.login(msg.body.username, msg.body.password)
-            type = 'login_Response'
-            break
+          // case "login":
+          //   body = await globals.activeModel.login(msg.body.username, msg.body.password)
+          //   type = 'login_Response'
+          //   break
           case "checkAuth":
             body = await globals.activeModel.checkAuth(msg.body.token)
             type = 'checkAuth_Response'

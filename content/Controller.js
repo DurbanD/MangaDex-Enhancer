@@ -21,10 +21,10 @@ export default class Controller {
         account: null,
         settings: null
     }
+    static active = null
     constructor(name) {
-        if (Controller.name !== '') throw Error('Content Controller already exists')
-        Controller.name = name
-        this.name = Controller.name
+        if (Controller.active) throw Error('Content Controller already exists')
+        this.name = name
         this.port = Controller.port
         this.dataMap = Controller.dataMap
         this.authTokens = {
@@ -32,11 +32,17 @@ export default class Controller {
             refresh:null
         },
         this.user = Controller.user
+        Controller.active = this
     }
 
     static sendMessage(type, body) {
         if (!Controller.port) Controller.connect()
         Controller.port.postMessage({type: type, body:body});
+    }
+
+    static getActive() {
+        if (!Controller.active) new Controller('')
+        return Controller.active
     }
 
     sendMessage(type, body) {
@@ -54,7 +60,10 @@ export default class Controller {
     static listenForConnectionMessages () {
         if (!Controller.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
         Controller.port.onMessage.addListener(function(msg, sender) {
-
+            let activeController = Controller.getActive()
+            if (msg.body.result === 'error') {
+                activeController.sendMessage('check_auth')
+            }
             switch (msg.type){
                 case "get_manga_response":
                     if (msg.body === null) break
@@ -115,10 +124,8 @@ export default class Controller {
                         }
                     }
                     break
-                case "login_Response":
-                    break
-                case 'get_auth_Response':
-                    if (msg.body.isAuthenticated === false) Controller.sendMessage('refresh_token', {token: Controller.authTokens.refresh})
+                case 'check_auth_response':
+                    if (!msg.body.isAuthenticated) Controller.sendMessage('refresh_token')
                     console.log(msg)
                     break
                 case 'get_user_response':
@@ -128,7 +135,11 @@ export default class Controller {
                     Controller.user.settings = msg.body.data
                     break
                 case 'refresh_token_response' :
+                    Controller.authTokens = msg.body.tokens
                     console.log(msg)
+                    break
+                case 'pass_auth_response' :
+                    Controller.sendMessage('check_auth')
                     break
                 default: 
                     console.log(msg)
@@ -140,7 +151,7 @@ export default class Controller {
     static openConnection() {
         Controller.port = chrome.runtime.connect({name: Controller.name})
         Controller.port.onDisconnect.addListener(()=> Controller.port = null)
-        return Controller.port
+        // return Controller.port
 
     }
     static listenForMessages () {
@@ -166,13 +177,12 @@ export default class Controller {
         let newManga = []
         this.setContainers(view)
         this.setTokens(this.getTokens(view))
-
         for (let key of this.dataMap.keys()) if (this.dataMap.get(key).info === null) newManga.push(key)
 
         if (newManga.length > 0) {
             Controller.sendMessage('get_manga', { idList: newManga})
-            Controller.sendMessage('get_read', { idList: newManga, token: this.authTokens.session})
-            Controller.sendMessage('get_rating', { idList: newManga, token: this.authTokens.session})
+            Controller.sendMessage('get_read', { idList: newManga})
+            Controller.sendMessage('get_rating', { idList: newManga })
             for (let manga of newManga) {
                 Controller.sendMessage('get_aggregate', {id: manga, language:['en']})
             }
@@ -198,16 +208,21 @@ export default class Controller {
 
     setUser() {
         if (!this.authTokens.session) throw Error('No user to set in Controller.setUser()')
-        Controller.sendMessage('get_user', { userID: 'me', token: this.authTokens.session })
-        Controller.sendMessage('get_user_settings', { token: this.authTokens.session })
+        Controller.sendMessage('get_user', { userID: 'me' })
+        Controller.sendMessage('get_user_settings')
     }
 
     refresh(view) {
-        if (!this.port) this.port = Controller.connect()
-        this.setTokens(this.getTokens(view))
+        if (!this.port || this.port === undefined) this.connect()
+        if (!this.authTokens.session) {
+            this.setTokens(this.getTokens(view))
+            this.sendMessage('pass_auth', { tokens: this.authTokens })
+        }
+        if (!this.user.account) this.setUser()
+
         view.updateSeenCards()
         this.updateDataMap(view)
-        if (!this.user.account) this.setUser()
+
 
         for (let card of view.cards) {
             let infoBar = view.attachInfoBar(card)

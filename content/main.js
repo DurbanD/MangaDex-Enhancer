@@ -22,9 +22,5 @@ export const main = async () => {
             Handler.refresh(V)
             console.log(Handler)
         }
-        if (authCookies.session !== Handler.authTokens.session) {
-            Handler.refresh(V)
-            Handler.sendMessage('get_auth', {token: Handler.authTokens.session})
-        }
     }).observe(document, {subtree: true, childList: true})
 }
