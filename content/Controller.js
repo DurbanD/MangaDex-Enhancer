@@ -14,7 +14,6 @@ class Manga {
 }
 
 export default class Controller {
-    static name = ''
     static dataMap = new Map()
     static port = null
     static user = {
@@ -27,12 +26,17 @@ export default class Controller {
         this.name = name
         this.port = Controller.port
         this.dataMap = Controller.dataMap
-        this.authTokens = {
+        this.view = null
+        this.auth = {
             session:null,
             refresh:null
         },
         this.user = Controller.user
         Controller.active = this
+    }
+
+    setView(view) {
+        this.view = view
     }
 
     static sendMessage(type, body) {
@@ -141,6 +145,9 @@ export default class Controller {
                 case 'pass_auth_response' :
                     Controller.sendMessage('check_auth')
                     break
+                case 'query_datamap_response':
+                    console.log(msg.body)
+                    break
                 default: 
                     console.log(msg)
                     break
@@ -176,22 +183,23 @@ export default class Controller {
     updateDataMap(view) {
         let newManga = []
         this.setContainers(view)
-        this.setTokens(this.getTokens(view))
+        if (!this.auth) this.setTokens(this.getTokens(view))
         for (let key of this.dataMap.keys()) if (this.dataMap.get(key).info === null) newManga.push(key)
 
         if (newManga.length > 0) {
-            Controller.sendMessage('get_manga', { idList: newManga})
-            Controller.sendMessage('get_read', { idList: newManga})
-            Controller.sendMessage('get_rating', { idList: newManga })
+            // this.sendMessage('check_auth')
+            this.sendMessage('get_manga', { idList: newManga})
+            this.sendMessage('get_read', { idList: newManga})
+            this.sendMessage('get_rating', { idList: newManga })
             for (let manga of newManga) {
-                Controller.sendMessage('get_aggregate', {id: manga, language:['en']})
+                this.sendMessage('get_aggregate', {id: manga, language:['en']})
             }
         }
     }
 
-    getTokens(view) {
-        let session = view.getCookie('auth._token.local'),
-        refresh = view.getCookie('auth._refresh_token.local')
+    getTokens() {
+        let session = this.view.getCookie('auth._token.local'),
+        refresh = this.view.getCookie('auth._refresh_token.local')
 
         return {
             session: session,
@@ -200,33 +208,31 @@ export default class Controller {
     }
 
     setTokens(tokens) {
-        this.authTokens = {
+        this.auth = {
             session : tokens.session,
             refresh : tokens.refresh
         }
     }
 
     setUser() {
-        if (!this.authTokens.session) throw Error('No user to set in Controller.setUser()')
-        Controller.sendMessage('get_user', { userID: 'me' })
-        Controller.sendMessage('get_user_settings')
+        if (!this.auth.session) throw Error('No user to set in Controller.setUser()')
+        this.sendMessage('get_user', { userID: 'me' })
     }
 
-    refresh(view) {
+    refresh() {
         if (!this.port || this.port === undefined) this.connect()
-        if (!this.authTokens.session) {
-            this.setTokens(this.getTokens(view))
-            this.sendMessage('pass_auth', { tokens: this.authTokens })
+        if (!this.auth.session) {
+            this.setTokens(this.getTokens(this.view))
+            this.sendMessage('pass_auth', { tokens: this.auth })
         }
         if (!this.user.account) this.setUser()
 
-        view.updateSeenCards()
-        this.updateDataMap(view)
+        this.view.updateSeenCards()
+        this.updateDataMap(this.view)
 
-
-        for (let card of view.cards) {
-            let infoBar = view.attachInfoBar(card)
-            if (this.dataMap.has(view.getCardID(card))) view.updateInfoBar(infoBar, this.dataMap.get(view.getCardID(card)))
+        for (let card of this.view.cards) {
+            let infoBar = this.view.attachInfoBar(card)
+            if (this.dataMap.has(this.view.getCardID(card))) this.view.updateInfoBar(infoBar, this.dataMap.get(this.view.getCardID(card)))
         }
     }
 }

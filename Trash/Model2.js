@@ -95,9 +95,17 @@ globals.Model = class Model {
                 break
             
             case 'refresh_token' :
-                if (!body.token) return
                 query = `/auth/refresh`
-                payload = basicAuthPayload
+                payload = {
+                    headers: {
+                        'Content-Type' : 'application/json'
+                    },
+                    method: "POST",
+                    body : {
+                        "token" : this.auth.refresh
+                    }
+                }
+                payload = JSON.stringify(payload)
                 break
             default:
                 console.log(`sendRequest type ${type} defaulted. Body: `, body)
@@ -220,8 +228,8 @@ globals.Model = class Model {
                     break
                 case 'refresh_token' :
                     body = await apiModel.sendRequest('refresh_token', {token : apiModel.auth.refresh})
-                    apiModel.auth = body.token
                     type = 'refresh_token_response'
+                    if (body.status === 200) apiModel.auth = body.token
                     break
                 case 'pass_auth' :
                     body = msg.body

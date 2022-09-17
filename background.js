@@ -1,9 +1,8 @@
 let globals = {}
 try {
+  importScripts('./service/Manga.js')
   importScripts('./service/API_Connection.js')
-  // importScripts('./service/Controller.js')
-  // importScripts('./service/Model.js')
-  importScripts('./service/Model2.js')
+  importScripts('./service/API_Model.js')
 } catch (e) {
   console.log(e)
 }
@@ -11,4 +10,4 @@ try {
 let Controller = new globals.Model('API_Controller')
 
 Controller.init()
-Controller.startup()
+// Controller.startup()
