@@ -111,12 +111,10 @@ export default class Controller {
     static connect() {
         Controller.openConnection()
         Controller.listenForConnectionMessages()
-        // Controller.listenForMessages()
     }
 
     connect() {
         Controller.connect()
-        // this.listenForConnectionMessages()
         this.port = Controller.port
     }
 
