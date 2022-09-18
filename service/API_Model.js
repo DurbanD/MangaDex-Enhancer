@@ -29,8 +29,10 @@ globals.Model = class Model {
     }
 
     // User
-
+    // Requires Auth
     async requestUserInfo(userID, payload=this.defaultPayload) {
+        // if (!this.auth.session) return
+
         let requestURL = this.API_URL + `/user/${userID}`
 
         let request = await this.handleRequest(requestURL, payload)
@@ -38,6 +40,8 @@ globals.Model = class Model {
     }
 
     async requestRatingInfo(idList, payload=this.defaultPayload) {
+        // if (!this.auth.session) return
+
         let requestURL = this.API_URL + '/rating?'
         for (let id of idList) requestURL += `&manga[]=${id}`
 
@@ -46,6 +50,8 @@ globals.Model = class Model {
     }
 
     async requestReadInfo(idList, payload=this.defaultPayload) {
+        // if (!this.auth.session) return
+
         let requestURL = this.API_URL + '/manga/read?'
         for (let id of idList) requestURL += `&ids[]=${id}`
 
@@ -81,6 +87,10 @@ globals.Model = class Model {
     // Auth
 
     async checkAuthorization(payload=this.defaultPayload) {
+        // if (!this.auth.session) {
+        //     console.log('Unable to check Auth. No session token')
+        //     return
+        // }
         let requestURL = this.API_URL + '/auth/check'
 
         let request = await this.handleRequest(requestURL, payload)
@@ -88,8 +98,12 @@ globals.Model = class Model {
     }
 
     async requestTokenRefresh(refreshToken=this.auth.refresh) {
+        // if (!this.auth.refresh) {
+        //     console.log('Unable to refresh auth. No refresh token')
+        //     return
+        // }
         let requestURL = this.API_URL + `/auth/refresh`
-        payload = {
+        let payload = {
             headers: {
                 'Content-Type' : 'application/json'
             },
@@ -142,7 +156,7 @@ globals.Model = class Model {
     connectionListenerCallback(port) {
         globals.activeConnection.port = port
         globals.activeConnection.startMessageListener(port, async function(msg) {
-            let apiModel = globals.Model.getActive(), body, type
+            let apiModel = globals.Model.getActive(), body, type, updatedData = []
             switch (msg.type) {
                 case "lookupHistory":
                     body = apiModel.history
@@ -154,7 +168,8 @@ globals.Model = class Model {
                     break
                 case "get_rating":
                     body = await apiModel.requestRatingInfo(msg.body.idList)
-                    type = 'get_rating_response'
+                    type = 'datamap_update_notice'
+                    // type = 'get_rating_response'
                     // Set user rating in Manga datamap
                     if (body.result === "ok") {
                         for (let id of Object.keys(body.ratings)) {
@@ -162,6 +177,8 @@ globals.Model = class Model {
 
                             if (!apiModel.dataMap.has(id)) apiModel.dataMap.set(id, new globals.Manga(id))
                             apiModel.dataMap.get(id).user.rating = mangaRating
+                            updatedData.push(apiModel.dataMap.get(id))
+                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(id)})
                         }
                     }
                     break
@@ -171,19 +188,23 @@ globals.Model = class Model {
                     break
                 case 'get_manga':
                     body = await apiModel.requestMangaInfo(msg.body.idList)
-                    type = 'get_manga_response'
+                    // type = 'get_manga_response'
+                    type = 'datamap_update_notice'
 
                     // Set manga info in dataMap
                     if (body.result === "ok") {
                         for (let res of body.data) {
                             if (!apiModel.dataMap.has(res.id)) apiModel.dataMap.set(res.id, new globals.Manga(res.id))
                             apiModel.dataMap.get(res.id).info = res
+                            updatedData.push(apiModel.dataMap.get(res.id))
+                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(res.id)})
                         }
                     }
                     break
                 case 'get_chapter':
                     body = await apiModel.requestChapterInfo(msg.body.idList)
-                    type = 'get_chapter_response'
+                    // type = 'get_chapter_response'
+                    type = 'datamap_update_notice'
 
                     // Set user read and newest read in datamap
                     if (body.result === "ok") {
@@ -191,9 +212,12 @@ globals.Model = class Model {
                             let id = ''
                             for (let relationship of res.relationships) if (relationship.type === 'manga') {
                                 id = relationship.id
+                                if (!apiModel.dataMap.has(id)) apiModel.dataMap.set(id, new globals.Manga(id))
                                 if (apiModel.dataMap.has(id)) { 
                                     apiModel.dataMap.get(id).user.read.push(res)
                                     apiModel.dataMap.get(id).newestRead = Math.max(apiModel.dataMap.get(id).newestRead, parseFloat(res.attributes.chapter))
+                                    
+                                    updatedData.push(apiModel.dataMap.get(id))
                                 }
                             }
                         }
@@ -202,17 +226,27 @@ globals.Model = class Model {
                 case 'get_aggregate' :
                     body = await apiModel.requestAggregateMangaInfo(msg.body.id)
                     body.manga_id = msg.body.id
-                    type = 'get_aggregate_response'
+                    // type = 'get_aggregate_response'
+                    type = 'datamap_update_notice'
                     
                     // Set latest released chapter in datamap
                     if (body.result === "ok") {
+                        if (!apiModel.dataMap.has(body.manga_id)) apiModel.dataMap.set(body.manga_id, new globals.Manga(body.manga_id))
                         if (apiModel.dataMap.has(body.manga_id)) {
                             apiModel.dataMap.get(body.manga_id).aggregate = body.volumes
+                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(body.manga_id)})
+
                             for (let vol of Object.values(body.volumes)) {
                                 for (let ch of Object.values(vol.chapters)) {
-                                    if (parseFloat(ch.chapter) > apiModel.dataMap.get(body.manga_id).newestChapter) apiModel.dataMap.get(body.manga_id).newestChapter = parseFloat(ch.chapter)
+                                    if (parseFloat(ch.chapter) > apiModel.dataMap.get(body.manga_id).newestChapter) {
+                                        apiModel.dataMap.get(body.manga_id).newestChapter = parseFloat(ch.chapter)
+
+                                        // updatedData.push(apiModel.dataMap.get(body.manga_id))
+                                        // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(body.manga_id)})
+                                    }
                                 }
                             }
+                            updatedData.push(apiModel.dataMap.get(body.manga_id))
                         }
                     }
                     break
@@ -233,7 +267,7 @@ globals.Model = class Model {
                     payload.headers.Authorization = currentAuth
 
                     let authValidation = await apiModel.checkAuthorization(payload)
-                    if (authValidation.isAuthenticated) {
+                    if (authValidation && authValidation.isAuthenticated) {
                         apiModel.auth = msg.body.tokens
                     }
                     else {
@@ -247,13 +281,14 @@ globals.Model = class Model {
                 case 'query_datamap':
                     let id = msg.body.id
                     type = 'query_datamap_response'
-                    body = apiModel.dataMap.get(id)
+                    body = apiModel.dataMap.has(id) ? apiModel.dataMap.get(id) : {id:id, info:false}
                     break
                 
                 default:
                     break
             }
             console.log(apiModel)
+            if (type === 'datamap_update_notice') body = updatedData
             port.postMessage({type:type, body:body})
         })
       }
@@ -269,9 +304,4 @@ globals.Model = class Model {
         this.updateGlobals()
         connection.startConnectionListener(this.connectionListenerCallback)
       }
-  
-    //   startup() {
-    //     if (!this.connection) this.init()
-    //     this.connection.startConnectionListener(this.connectionListenerCallback)
-    //   }
   }

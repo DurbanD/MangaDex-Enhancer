@@ -3,12 +3,49 @@ export default class View {
     constructor() {
         this.cards = document.querySelectorAll('.manga-card')
         this.cardMap = new Map()
-        // this.loginListeners = new Map()
-        // this.logOutListeners = new Map()
+        this.infoBarClassList = 'sub_info_bar_mdp'
+    }
+
+    clientBrowserIsLoggedIn() {
+        let session = this.getCookie('auth._token.local')
+        if (session && session !== 'false' ) return true
+        return false
+    }
+
+    updateCardMap() {
+        let newCards = []
+        this.updateSeenCards()
+        for (let card of this.cards) {
+            let cardID = this.getCardID(card)
+            if (!this.cardMap.has(cardID)) {
+                this.cardMap.set(cardID, card)
+                newCards.push({key:cardID, value:this.cardMap.get(cardID)})
+            }
+            this.cardMap.set(cardID, card)
+        }
+        return newCards
     }
 
     updateSeenCards() {
         this.cards = document.querySelectorAll('.manga-card')
+    }
+
+    seeCards() {
+        return document.querySelectorAll('.manga-card')
+    }
+
+    seeBarlessCards() {
+        let currentCards = this.seeCards(),
+            barlessCards = []
+        for (let card of currentCards) {
+            if (!this.cardHasInfoBar(card)) barlessCards.push(card)
+        }
+        return barlessCards
+    }
+
+    cardHasInfoBar(card) {
+        if (card.querySelectorAll(`.${this.infoBarClassList}`).length>0) return true
+        return false
     }
 
     getCardID(card) {
@@ -18,14 +55,13 @@ export default class View {
     }
 
     updateInfoBar(infoBar, Manga) {
-        // console.log('Updating ', infoBar, ' with ', Manga)
         let counterRead = infoBar.querySelector('.chapter_counter_read_mdp'),
             counterAvailable = infoBar.querySelector('.chapter_counter_available_mdp'),
             rank = infoBar.querySelector('.mdp_rank'),
             rankFlair = infoBar.querySelector('.rank_flair')
 
-        counterRead.innerText = `${Manga.newestRead}`
-        counterAvailable.innerText =  `${Manga.newestChapter}`
+        if (counterRead.innerText === '0') counterRead.innerText = `${Manga.newestRead}`
+        if (counterAvailable.innerText === '0') counterAvailable.innerText =  `${Manga.newestChapter}`
         
         if (Manga.user.rating !== null) {
             rank.innerText = `${Manga.user.rating}`
@@ -36,13 +72,17 @@ export default class View {
 
     attachInfoBar(container) {
         let infoBar = document.createElement('div')
-        infoBar.classList = 'sub_info_bar_mdp'
+        infoBar.classList = this.infoBarClassList
         infoBar.appendChild(this.chapterCounter())
         infoBar.appendChild(this.rankDisplay())
 
         container.appendChild(infoBar)
 
         return infoBar
+    }
+
+    getInfoBar(card) {
+        return card.querySelector(`.${this.infoBarClassList}`)
     }
 
     chapterCounter() {
