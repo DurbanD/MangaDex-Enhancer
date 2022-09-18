@@ -43,20 +43,12 @@ export default class Controller {
         Controller.port.onMessage.addListener(function(msg, sender) {
             let activeController = Controller.getActive(), id, card, infoBar
             switch (msg.type){
-                case "get_manga_response":
-                    break
-                case 'get_rating_response':                 
-                    break
                 case 'get_read_response':
                     if (msg.body === null) break
                     if (msg.body.result === "ok") {
                         let readChapters = msg.body.data
                         while (readChapters.length > 0) Controller.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
                     }
-                    break
-                case 'get_chapter_response':
-                    break
-                case 'get_aggregate_response' :
                     break
                 case 'check_auth_response':
                     break

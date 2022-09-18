@@ -31,8 +31,6 @@ globals.Model = class Model {
     // User
     // Requires Auth
     async requestUserInfo(userID, payload=this.defaultPayload) {
-        // if (!this.auth.session) return
-
         let requestURL = this.API_URL + `/user/${userID}`
 
         let request = await this.handleRequest(requestURL, payload)
@@ -40,8 +38,6 @@ globals.Model = class Model {
     }
 
     async requestRatingInfo(idList, payload=this.defaultPayload) {
-        // if (!this.auth.session) return
-
         let requestURL = this.API_URL + '/rating?'
         for (let id of idList) requestURL += `&manga[]=${id}`
 
@@ -50,8 +46,6 @@ globals.Model = class Model {
     }
 
     async requestReadInfo(idList, payload=this.defaultPayload) {
-        // if (!this.auth.session) return
-
         let requestURL = this.API_URL + '/manga/read?'
         for (let id of idList) requestURL += `&ids[]=${id}`
 
@@ -63,6 +57,7 @@ globals.Model = class Model {
 
     async requestMangaInfo(idList, payload=this.defaultPayload, limit=100, offset=0) {
         let requestURL = this.API_URL + `/manga?limit=${limit}&offset=${offset}`
+
         for (let id of idList) requestURL += `&ids[]=${id}`
 
         let request = await this.handleRequest(requestURL, payload)
@@ -87,10 +82,6 @@ globals.Model = class Model {
     // Auth
 
     async checkAuthorization(payload=this.defaultPayload) {
-        // if (!this.auth.session) {
-        //     console.log('Unable to check Auth. No session token')
-        //     return
-        // }
         let requestURL = this.API_URL + '/auth/check'
 
         let request = await this.handleRequest(requestURL, payload)
@@ -98,10 +89,6 @@ globals.Model = class Model {
     }
 
     async requestTokenRefresh(refreshToken=this.auth.refresh) {
-        // if (!this.auth.refresh) {
-        //     console.log('Unable to refresh auth. No refresh token')
-        //     return
-        // }
         let requestURL = this.API_URL + `/auth/refresh`
         let payload = {
             headers: {
@@ -162,14 +149,20 @@ globals.Model = class Model {
                     body = apiModel.history
                     type = "history_Response"
                     break
+                    
                 case 'get_user':
                     body = await apiModel.requestUserInfo(msg.body.userID)
                     type = 'get_user_response'
                     break
+
+                case 'get_read':
+                    body = await apiModel.requestReadInfo(msg.body.idList)
+                    type = 'get_read_response'
+                    break
+
                 case "get_rating":
                     body = await apiModel.requestRatingInfo(msg.body.idList)
                     type = 'datamap_update_notice'
-                    // type = 'get_rating_response'
                     // Set user rating in Manga datamap
                     if (body.result === "ok") {
                         for (let id of Object.keys(body.ratings)) {
@@ -182,13 +175,9 @@ globals.Model = class Model {
                         }
                     }
                     break
-                case 'get_read':
-                    body = await apiModel.requestReadInfo(msg.body.idList)
-                    type = 'get_read_response'
-                    break
+
                 case 'get_manga':
                     body = await apiModel.requestMangaInfo(msg.body.idList)
-                    // type = 'get_manga_response'
                     type = 'datamap_update_notice'
 
                     // Set manga info in dataMap
@@ -201,9 +190,9 @@ globals.Model = class Model {
                         }
                     }
                     break
+
                 case 'get_chapter':
                     body = await apiModel.requestChapterInfo(msg.body.idList)
-                    // type = 'get_chapter_response'
                     type = 'datamap_update_notice'
 
                     // Set user read and newest read in datamap
@@ -223,10 +212,10 @@ globals.Model = class Model {
                         }
                     }
                     break
+
                 case 'get_aggregate' :
                     body = await apiModel.requestAggregateMangaInfo(msg.body.id)
                     body.manga_id = msg.body.id
-                    // type = 'get_aggregate_response'
                     type = 'datamap_update_notice'
                     
                     // Set latest released chapter in datamap
@@ -234,15 +223,12 @@ globals.Model = class Model {
                         if (!apiModel.dataMap.has(body.manga_id)) apiModel.dataMap.set(body.manga_id, new globals.Manga(body.manga_id))
                         if (apiModel.dataMap.has(body.manga_id)) {
                             apiModel.dataMap.get(body.manga_id).aggregate = body.volumes
-                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(body.manga_id)})
 
                             for (let vol of Object.values(body.volumes)) {
                                 for (let ch of Object.values(vol.chapters)) {
                                     if (parseFloat(ch.chapter) > apiModel.dataMap.get(body.manga_id).newestChapter) {
                                         apiModel.dataMap.get(body.manga_id).newestChapter = parseFloat(ch.chapter)
 
-                                        // updatedData.push(apiModel.dataMap.get(body.manga_id))
-                                        // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(body.manga_id)})
                                     }
                                 }
                             }
@@ -250,15 +236,18 @@ globals.Model = class Model {
                         }
                     }
                     break
+
                 case 'check_auth':
                     body = await apiModel.checkAuthorization()
                     type = 'check_auth_response'
                     break
+
                 case 'refresh_token' :
                     body = await apiModel.requestTokenRefresh()
                     type = 'refresh_token_response'
                     if (body.result === 'ok') apiModel.auth = body.token
                     break
+
                 case 'pass_auth' :
                     let currentAuth = msg.body.tokens.session,
                         payload = apiModel.defaultPayload
