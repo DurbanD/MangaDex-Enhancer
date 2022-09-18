@@ -6,4 +6,4 @@ This is a Chrome extension that adds user rating, the English chapter count, and
 
 ## Installation
 
-Extions > Load unpacked > manifest.json located in the root of the project directory.
+Extensions > Load unpacked > manifest.json located in the root of the project directory.
