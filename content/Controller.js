@@ -1,10 +1,10 @@
 export default class Controller {
     static view = null
     static port = null
-    static user = {
-        account: null,
-        settings: null
-    }
+    // static user = {
+    //     account: null,
+    //     settings: null
+    // }
     static active = null
     constructor(name) {
         if (Controller.active) throw Error('Content Controller already exists')
@@ -15,7 +15,7 @@ export default class Controller {
             session:null,
             refresh:null
         },
-        this.user = Controller.user
+        // this.user = Controller.user
         Controller.active = this
     }
 
@@ -29,7 +29,7 @@ export default class Controller {
         Controller.port.postMessage({type: type, body:body});
     }
 
-    static getActive() {
+    static getActive(name='') {
         if (!Controller.active) new Controller('')
         return Controller.active
     }
@@ -53,7 +53,7 @@ export default class Controller {
                 case 'check_auth_response':
                     break
                 case 'get_user_response':
-                    Controller.user.account = msg.body.data
+                    // Controller.user.account = msg.body.data
                     break
                 case 'refresh_token_response' :
                     break
@@ -165,7 +165,7 @@ export default class Controller {
             this.setTokens(this.getTokens(this.view)) 
             this.sendMessage('pass_auth', { tokens: this.auth })
         }
-        if (!this.user.account) this.setUser()
+        // if (!this.user.account) this.setUser()
 
         this.update()
     }
