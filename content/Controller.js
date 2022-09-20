@@ -153,10 +153,10 @@ export default class Controller {
         }
     }
 
-    setUser() {
-        if (!this.auth.session) throw Error('No user to set in Controller.setUser()')
-        this.sendMessage('get_user', { userID: 'me' })
-    }
+    // setUser() {
+    //     if (!this.auth.session) throw Error('No user to set in Controller.setUser()')
+    //     this.sendMessage('get_user', { userID: 'me' })
+    // }
 
     refresh() {
         if (!this.port || this.port === undefined) this.connect()
