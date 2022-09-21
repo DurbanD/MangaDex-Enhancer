@@ -118,6 +118,13 @@ globals.Model = class Model {
         return request.token
     }
 
+    clearAuth() {
+        this.auth = {
+            session: null,
+            refresh: null
+        }
+    }
+
     // Handle API Request
 
     async handleRequest(url, payload) {
