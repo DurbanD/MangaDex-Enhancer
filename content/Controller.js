@@ -1,21 +1,12 @@
 export default class Controller {
     static view = null
     static port = null
-    // static user = {
-    //     account: null,
-    //     settings: null
-    // }
     static active = null
     constructor(name) {
         if (Controller.active) throw Error('Content Controller already exists')
         this.name = name
         this.port = Controller.port
         this.view = Controller.view
-        this.auth = {
-            session:null,
-            refresh:null
-        },
-        // this.user = Controller.user
         Controller.active = this
     }
 
@@ -146,26 +137,11 @@ export default class Controller {
         }
     }
 
-    setTokens(tokens) {
-        this.auth = {
-            session : tokens.session,
-            refresh : tokens.refresh
-        }
-    }
-
-    // setUser() {
-    //     if (!this.auth.session) throw Error('No user to set in Controller.setUser()')
-    //     this.sendMessage('get_user', { userID: 'me' })
-    // }
-
     refresh() {
         if (!this.port || this.port === undefined) this.connect()
-
-        if (!this.auth.session && this.view.clientBrowserIsLoggedIn()) {
-            this.setTokens(this.getTokens(this.view)) 
-            this.sendMessage('pass_auth', { tokens: this.auth })
+        if (this.view.clientBrowserIsLoggedIn()) {
+            this.sendMessage('pass_auth', { tokens: this.getTokens() })
         }
-        // if (!this.user.account) this.setUser()
 
         this.update()
     }
