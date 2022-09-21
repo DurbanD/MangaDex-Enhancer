@@ -128,12 +128,12 @@ globals.Model = class Model {
     // Handle API Request
 
     async handleRequest(url, payload) {
-        let request 
+        let request, apiModel = Model.getActive()
         try {
             request = await fetch(url, payload).then(async res=>{
                 if (parseInt(res.status) === 401 || parseInt(res.status) === 403) {
-                    await this.refreshAuth()
-                    payload.headers.Authorization = this.auth.session
+                    await apiModel.refreshAuth()
+                    payload.headers.Authorization = apiModel.auth.session
                     return await fetch(url, payload).then(res=>res.json())
                 }
                 return res.json()
@@ -175,7 +175,6 @@ globals.Model = class Model {
                             if (!apiModel.dataMap.has(id)) apiModel.dataMap.set(id, new globals.Manga(id))
                             apiModel.dataMap.get(id).user.rating = mangaRating
                             updatedData.push(apiModel.dataMap.get(id))
-                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(id)})
                         }
                     }
                     break
@@ -190,7 +189,6 @@ globals.Model = class Model {
                             if (!apiModel.dataMap.has(res.id)) apiModel.dataMap.set(res.id, new globals.Manga(res.id))
                             apiModel.dataMap.get(res.id).info = res
                             updatedData.push(apiModel.dataMap.get(res.id))
-                            // port.postMessage({type:'datamap_update_notice', body:apiModel.dataMap.get(res.id)})
                         }
                     }
                     break
@@ -199,7 +197,7 @@ globals.Model = class Model {
                     body = await apiModel.requestReadInfo(msg.body.idList)
                     type = 'get_read_response'
                     break
-                    
+
                 case 'get_chapter':
                     body = await apiModel.requestChapterInfo(msg.body.idList)
                     type = 'datamap_update_notice'
@@ -266,14 +264,24 @@ globals.Model = class Model {
                         payload.headers.Authorization = currentAuth
 
                         let authValidation = await apiModel.checkAuthorization(payload)
-                        if (authValidation && authValidation.isAuthenticated) {
-                            apiModel.auth = msg.body.tokens
+                        if (authValidation) {
+                            if (authValidation.isAuthenticated) {
+                                apiModel.auth = msg.body.tokens
+                            }
+                            else {
+                                let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
+                                if (refresh.result === 'ok') apiModel.auth = refresh.token
+                                else body = 'Unable to authenticate'
+                            }
                         }
-                        else {
-                            let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
-                            if (refresh.result === 'ok') apiModel.auth = refresh.token
-                            else body = 'Unable to authenticate'
-                        }
+                        // if (authValidation && authValidation.isAuthenticated) {
+                        //     apiModel.auth = msg.body.tokens
+                        // }
+                        // else if (authValidation) {
+                        //     let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
+                        //     if (refresh.result === 'ok') apiModel.auth = refresh.token
+                        //     else body = 'Unable to authenticate'
+                        // }
                     }
                     break
                 
