@@ -249,21 +249,24 @@ globals.Model = class Model {
                     break
 
                 case 'pass_auth' :
-                    let currentAuth = msg.body.tokens.session,
+                    if (apiModel.auth.refresh === null) {
+                        let currentAuth = msg.body.tokens.session,
                         payload = apiModel.defaultPayload
-                    body = msg.body
-                    type = 'pass_auth_response'
-                    payload.headers.Authorization = currentAuth
+                        body = msg.body
+                        type = 'pass_auth_response'
+                        payload.headers.Authorization = currentAuth
 
-                    let authValidation = await apiModel.checkAuthorization(payload)
-                    if (authValidation && authValidation.isAuthenticated) {
-                        apiModel.auth = msg.body.tokens
+                        let authValidation = await apiModel.checkAuthorization(payload)
+                        if (authValidation && authValidation.isAuthenticated) {
+                            apiModel.auth = msg.body.tokens
+                        }
+                        else {
+                            let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
+                            if (refresh.result === 'ok') apiModel.auth = refresh.token
+                            else body = 'Unable to authenticate'
+                        }
                     }
-                    else {
-                        let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
-                        if (refresh.result === 'ok') apiModel.auth = refresh.token
-                        else body = 'Unable to authenticate'
-                    }
+                    
 
                     break
                 
