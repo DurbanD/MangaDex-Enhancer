@@ -249,11 +249,11 @@ globals.Model = class Model {
                     break
 
                 case 'pass_auth' :
+                    type = 'pass_auth_response'
+                    body = msg.body
                     if (apiModel.auth.refresh === null) {
                         let currentAuth = msg.body.tokens.session,
-                        payload = apiModel.defaultPayload
-                        body = msg.body
-                        type = 'pass_auth_response'
+                            payload = apiModel.defaultPayload
                         payload.headers.Authorization = currentAuth
 
                         let authValidation = await apiModel.checkAuthorization(payload)
@@ -266,8 +266,6 @@ globals.Model = class Model {
                             else body = 'Unable to authenticate'
                         }
                     }
-                    
-
                     break
                 
                 case 'query_datamap':
