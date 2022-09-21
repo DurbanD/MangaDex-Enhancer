@@ -1,28 +1,24 @@
 export default class Controller {
-    // static view = null
     static active = null
     constructor(name) {
         if (Controller.active) throw Error('Content Controller already exists')
         this.name = name
         this.port = null
         this.view = null
-        // this.view = Controller.view
         Controller.active = this
+    }
+    static getActive(name='') {
+        if (!Controller.active) new Controller('')
+        return Controller.active
     }
 
     setView(view) {
-        // Controller.view = view
         this.view = view
     }
 
     sendMessage(type, body) {
         if (!this.port) this.connect()
         this.port.postMessage({type: type, body:body});
-    }
-
-    static getActive(name='') {
-        if (!Controller.active) new Controller('')
-        return Controller.active
     }
 
     listenForConnectionMessages () {
@@ -78,23 +74,11 @@ export default class Controller {
         return this.port
 
     }
-    listenForMessages () {
-        chrome.runtime.onMessage.addListener(
-            function(request, sender, sendResponse) {
-              console.log(sender);
-            }
-        );
-    }
 
     connect() {
         this.openConnection()
         this.listenForConnectionMessages()
     }
-
-    // connect() {
-    //     this.connect()
-    //     this.port = this.port
-    // }
 
     update() {
         let newManga,
