@@ -26,13 +26,6 @@ export default class Controller {
         this.port.onMessage.addListener(function(msg, sender) {
             let activeController = Controller.getActive(), id, card, infoBar
             switch (msg.type){
-                case 'get_read_response':
-                    if (msg.body === null) break
-                    if (msg.body.result === "ok") {
-                        let readChapters = msg.body.data
-                        while (readChapters.length > 0) activeController.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
-                    }
-                    break
                 case 'check_auth_response':
                     break
                 case 'get_user_response':
@@ -40,6 +33,13 @@ export default class Controller {
                 case 'refresh_token_response' :
                     break
                 case 'pass_auth_response' :
+                    break
+                case 'get_read_response':
+                    if (msg.body === null) break
+                    if (msg.body.result === "ok") {
+                        let readChapters = msg.body.data
+                        while (readChapters.length > 0) activeController.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
+                    }
                     break
                 case 'datamap_update_notice':   
                     for (let manga of msg.body) {
@@ -62,10 +62,14 @@ export default class Controller {
 
                     break
                 default: 
-                    console.log(msg)
                     break
             }
           });
+    }
+
+    connect() {
+        this.openConnection()
+        this.listenForConnectionMessages()
     }
 
     openConnection() {
@@ -73,11 +77,6 @@ export default class Controller {
         this.port.onDisconnect.addListener(()=> this.port = null)
         return this.port
 
-    }
-
-    connect() {
-        this.openConnection()
-        this.listenForConnectionMessages()
     }
 
     update() {

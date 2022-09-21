@@ -140,7 +140,7 @@ globals.Model = class Model {
             }).then(data=>data)
         }
         catch(err) {
-            throw Error(err)
+            throw Error(`Unable to handle request ${payload.method} to ${url}. Payload: ${payload} \n Error:${err}`)
         }
 
         this.history.push({url:url, payload:payload, request:request})
@@ -162,10 +162,7 @@ globals.Model = class Model {
                     type = 'get_user_response'
                     break
 
-                case 'get_read':
-                    body = await apiModel.requestReadInfo(msg.body.idList)
-                    type = 'get_read_response'
-                    break
+                
 
                 case "get_rating":
                     body = await apiModel.requestRatingInfo(msg.body.idList)
@@ -198,6 +195,11 @@ globals.Model = class Model {
                     }
                     break
 
+                case 'get_read':
+                    body = await apiModel.requestReadInfo(msg.body.idList)
+                    type = 'get_read_response'
+                    break
+                    
                 case 'get_chapter':
                     body = await apiModel.requestChapterInfo(msg.body.idList)
                     type = 'datamap_update_notice'

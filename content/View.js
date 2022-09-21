@@ -6,11 +6,39 @@ export default class View {
         this.infoBarClassList = 'sub_info_bar_mdp'
     }
 
+    // Authorization
+
     clientBrowserIsLoggedIn() {
         let session = this.getCookie('auth._token.local')
         if (session && session !== 'false' ) return true
         return false
     }
+
+    getCookie(name) {
+        let nameRegex = new RegExp(name + '='),
+        decodedCookie = decodeURIComponent(document.cookie),
+        cookies = decodedCookie.split(';');
+
+        for (let cookie of cookies) {
+            if (nameRegex.test(cookie)) {
+                let res = cookie.trim()
+                return res.substring(name.length + 1, res.length)
+            }
+        }
+        return null
+    }
+
+    getTokens() {
+        let session = this.getCookie('auth._token.local'),
+        refresh = this.getCookie('auth._refresh_token.local')
+
+        return {
+            session: session,
+            refresh: refresh
+        }
+    }
+
+    // DOM Visibility
 
     updateCardMap() {
         let newCards = []
@@ -55,6 +83,8 @@ export default class View {
             id = href.match(/(?<=title\/)[A-Za-z0-9-]+/)
         return id[0]
     }
+
+    // Info Bar
 
     updateInfoBar(infoBar, Manga) {
         if (!infoBar) return
@@ -128,27 +158,4 @@ export default class View {
 
     }
 
-    getCookie(name) {
-        let nameRegex = new RegExp(name + '='),
-        decodedCookie = decodeURIComponent(document.cookie),
-        cookies = decodedCookie.split(';');
-
-        for (let cookie of cookies) {
-            if (nameRegex.test(cookie)) {
-                let res = cookie.trim()
-                return res.substring(name.length + 1, res.length)
-            }
-        }
-        return null
-    }
-
-    getTokens() {
-        let session = this.getCookie('auth._token.local'),
-        refresh = this.getCookie('auth._refresh_token.local')
-
-        return {
-            session: session,
-            refresh: refresh
-        }
-    }
 }
