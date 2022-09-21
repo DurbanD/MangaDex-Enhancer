@@ -106,20 +106,10 @@ export default class Controller {
 
     }
 
-    getTokens() {
-        let session = this.view.getCookie('auth._token.local'),
-        refresh = this.view.getCookie('auth._refresh_token.local')
-
-        return {
-            session: session,
-            refresh: refresh
-        }
-    }
-
     refresh() {
         if (!this.port || this.port === undefined) this.connect()
         if (this.view.clientBrowserIsLoggedIn()) {
-            this.sendMessage('pass_auth', { tokens: this.getTokens() })
+            this.sendMessage('pass_auth', { tokens: this.view.getTokens() })
         }
 
         this.update()

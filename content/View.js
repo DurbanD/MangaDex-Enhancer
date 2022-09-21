@@ -141,4 +141,14 @@ export default class View {
         }
         return null
     }
+
+    getTokens() {
+        let session = this.getCookie('auth._token.local'),
+        refresh = this.getCookie('auth._refresh_token.local')
+
+        return {
+            session: session,
+            refresh: refresh
+        }
+    }
 }
