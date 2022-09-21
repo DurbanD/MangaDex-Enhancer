@@ -44,17 +44,20 @@ export default class View {
     }
 
     cardHasInfoBar(card) {
+        if (!card) return false
         if (card.querySelectorAll(`.${this.infoBarClassList}`).length>0) return true
         return false
     }
 
     getCardID(card) {
+        if (!card) return
         let href = card.querySelector('a').href,
             id = href.match(/(?<=title\/)[A-Za-z0-9-]+/)
         return id[0]
     }
 
     updateInfoBar(infoBar, Manga) {
+        if (!infoBar) return
         let counterRead = infoBar.querySelector('.chapter_counter_read_mdp'),
             counterAvailable = infoBar.querySelector('.chapter_counter_available_mdp'),
             rank = infoBar.querySelector('.mdp_rank'),
@@ -71,6 +74,7 @@ export default class View {
     }
 
     attachInfoBar(container) {
+        if (!container) return
         let infoBar = document.createElement('div')
         infoBar.classList = this.infoBarClassList
         infoBar.appendChild(this.chapterCounter())
@@ -87,7 +91,6 @@ export default class View {
 
     chapterCounter() {
         let container = document.createElement('div'),
-        counter = document.createElement('p'),
         read = document.createElement('p'),
         available = document.createElement('p'),
         flair = document.createElement('p')
