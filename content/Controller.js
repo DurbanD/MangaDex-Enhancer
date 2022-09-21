@@ -1,23 +1,23 @@
 export default class Controller {
-    static view = null
-    static port = null
+    // static view = null
     static active = null
     constructor(name) {
         if (Controller.active) throw Error('Content Controller already exists')
         this.name = name
-        this.port = Controller.port
-        this.view = Controller.view
+        this.port = null
+        this.view = null
+        // this.view = Controller.view
         Controller.active = this
     }
 
     setView(view) {
-        Controller.view = view
-        this.view = Controller.view
+        // Controller.view = view
+        this.view = view
     }
 
-    static sendMessage(type, body) {
-        if (!Controller.port) Controller.connect()
-        Controller.port.postMessage({type: type, body:body});
+    sendMessage(type, body) {
+        if (!this.port) this.connect()
+        this.port.postMessage({type: type, body:body});
     }
 
     static getActive(name='') {
@@ -25,26 +25,21 @@ export default class Controller {
         return Controller.active
     }
 
-    sendMessage(type, body) {
-        Controller.sendMessage(type,body)
-    }
-
-    static listenForConnectionMessages () {
-        if (!Controller.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
-        Controller.port.onMessage.addListener(function(msg, sender) {
+    listenForConnectionMessages () {
+        if (!this.port) throw Error('Unable to listen for incoming connection messages: Port is empty')
+        this.port.onMessage.addListener(function(msg, sender) {
             let activeController = Controller.getActive(), id, card, infoBar
             switch (msg.type){
                 case 'get_read_response':
                     if (msg.body === null) break
                     if (msg.body.result === "ok") {
                         let readChapters = msg.body.data
-                        while (readChapters.length > 0) Controller.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
+                        while (readChapters.length > 0) activeController.sendMessage('get_chapter', {idList: readChapters.splice(0,100)})
                     }
                     break
                 case 'check_auth_response':
                     break
                 case 'get_user_response':
-                    // Controller.user.account = msg.body.data
                     break
                 case 'refresh_token_response' :
                     break
@@ -63,11 +58,11 @@ export default class Controller {
                     break
                 case 'query_datamap_response':
                     id = msg.body.id,
-                    card = Controller.view.cardMap.get(id)
+                    card = activeController.view.cardMap.get(id)
 
-                    if (!Controller.view.cardHasInfoBar(card)) infoBar = Controller.view.attachInfoBar(card)
-                    else infoBar = Controller.view.getInfoBar(card)
-                    Controller.view.updateInfoBar(infoBar, msg.body)
+                    if (!activeController.view.cardHasInfoBar(card)) infoBar = activeController.view.attachInfoBar(card)
+                    else infoBar = activeController.view.getInfoBar(card)
+                    activeController.view.updateInfoBar(infoBar, msg.body)
 
                     break
                 default: 
@@ -77,13 +72,13 @@ export default class Controller {
           });
     }
 
-    static openConnection() {
-        Controller.port = chrome.runtime.connect({name: Controller.name})
-        Controller.port.onDisconnect.addListener(()=> Controller.port = null)
-        return Controller.port
+    openConnection() {
+        this.port = chrome.runtime.connect({name: this.name})
+        this.port.onDisconnect.addListener(()=> this.port = null)
+        return this.port
 
     }
-    static listenForMessages () {
+    listenForMessages () {
         chrome.runtime.onMessage.addListener(
             function(request, sender, sendResponse) {
               console.log(sender);
@@ -91,15 +86,15 @@ export default class Controller {
         );
     }
 
-    static connect() {
-        Controller.openConnection()
-        Controller.listenForConnectionMessages()
+    connect() {
+        this.openConnection()
+        this.listenForConnectionMessages()
     }
 
-    connect() {
-        Controller.connect()
-        this.port = Controller.port
-    }
+    // connect() {
+    //     this.connect()
+    //     this.port = this.port
+    // }
 
     update() {
         let newManga,
