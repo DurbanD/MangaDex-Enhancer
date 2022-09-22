@@ -89,29 +89,27 @@ globals.Model = class Model {
     }
 
     async requestTokenRefresh(refreshToken=this.auth.refresh) {
+        if (!refreshToken) throw Error('No refresh token')
         let requestURL = this.API_URL + `/auth/refresh`
         let payload = {
             headers: {
                 'Content-Type' : 'application/json'
             },
             method: "POST",
-            body : {
+            body : JSON.stringify({
                 "token" : refreshToken
-            }
+            })
         }
-        payload = JSON.stringify(payload)
+        // payload = JSON.stringify(payload)
 
         let request = await this.handleRequest(requestURL, payload)
         return request
     }
 
-    async refreshAuth() {
-        let request
-        try {
-            request = await this.requestTokenRefresh()
-        } catch (err) {
-            throw Error(err)
-        }
+    async refreshAuth(refreshToken=this.auth.refresh) {
+        if (!refreshToken) throw Error('No refresh token')
+        let request = await this.requestTokenRefresh(refreshToken)
+
         if (request.result === 'ok') {
             this.auth = request.token
         }
@@ -131,19 +129,21 @@ globals.Model = class Model {
         let request, apiModel = Model.getActive()
         try {
             request = await fetch(url, payload).then(async res=>{
-                if (parseInt(res.status) === 401 || parseInt(res.status) === 403) {
-                    await apiModel.refreshAuth()
-                    payload.headers.Authorization = apiModel.auth.session
-                    return await fetch(url, payload).then(res=>res.json())
+                if (parseInt(res.status) === 401) {
+                    let newPayload = payload,
+                        refresh = await apiModel.refreshAuth()
+                    newPayload.headers.Authorization = refresh.session
+                    let secondAttempt = await fetch(url, newPayload).then(R=>R.json())
+                    return secondAttempt
                 }
                 return res.json()
             }).then(data=>data)
         }
         catch(err) {
-            throw Error(`Unable to handle request ${payload.method} to ${url}. Payload: ${payload} \n Error:${err}`)
+            apiModel.history.push({url:url, payload:payload, request:request})
+            throw Error(`Unable to handle request to ${url}. \n\nPayload: ${payload} \n\n Error:${err} \n\nRequest: ${request}`)
         }
-
-        this.history.push({url:url, payload:payload, request:request})
+        apiModel.history.push({url:url, payload:payload, request:request})
         return request
     }
 
@@ -265,7 +265,7 @@ globals.Model = class Model {
 
                         let authValidation = await apiModel.checkAuthorization(payload)
                         if (authValidation) {
-                            if (authValidation.isAuthenticated) {
+                            if (authValidation.isAuthenticated === true) {
                                 apiModel.auth = msg.body.tokens
                             }
                             else {
@@ -274,14 +274,6 @@ globals.Model = class Model {
                                 else body = 'Unable to authenticate'
                             }
                         }
-                        // if (authValidation && authValidation.isAuthenticated) {
-                        //     apiModel.auth = msg.body.tokens
-                        // }
-                        // else if (authValidation) {
-                        //     let refresh = await apiModel.requestTokenRefresh(msg.body.tokens.refresh)
-                        //     if (refresh.result === 'ok') apiModel.auth = refresh.token
-                        //     else body = 'Unable to authenticate'
-                        // }
                     }
                     break
                 

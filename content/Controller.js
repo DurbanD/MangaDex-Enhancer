@@ -33,6 +33,7 @@ export default class Controller {
                 case 'refresh_token_response' :
                     break
                 case 'pass_auth_response' :
+                    console.log(msg)
                     break
                 case 'get_read_response':
                     if (msg.body === null) break
