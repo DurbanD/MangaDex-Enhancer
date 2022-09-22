@@ -100,7 +100,6 @@ globals.Model = class Model {
                 "token" : refreshToken
             })
         }
-        // payload = JSON.stringify(payload)
 
         let request = await this.handleRequest(requestURL, payload)
         return request
